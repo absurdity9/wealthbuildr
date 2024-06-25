@@ -4,7 +4,7 @@
 <head>
     <title>Index</title>
     <link rel="stylesheet" type="text/css" href="{% static 'personalfinance/styles.css' %}">
-</head>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script></head>
 <body>
     <a href="{% url 'login' %}">Login</a>
     <a href="{% url 'register' %}">Signup</a>
@@ -19,115 +19,161 @@
 
     <h2>Your Financial Models:</h2>
     <ul>
-        {% for fmodel_with_income in fmodels_with_income %}
+        {% for fmodel_with_ie in fmodels_with_income_and_expense %}
             <li>
-                {{ fmodel_with_income.fmodel.id }}: {{ fmodel_with_income.fmodel.fmodel_name }}
+                FModel ID: {{ fmodel_with_ie.fmodel.id }} </br>
+                {{ fmodel_with_ie.fmodel.fmodel_name }}
                 <ul>
-                    {% for income in fmodel_with_income.incomes %}
-                        <li>{{ income.income_name }}: {{ income.value }}</li>
-                    {% endfor %}
+                    <li><strong>Incomes:</strong>
+                        <ul>
+                            {% for income in fmodel_with_ie.incomes %}
+                                <li>{{ income.income_name }}: {{ income.value }}</li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    <li><strong>Expenses:</strong>
+                        <ul>
+                            {% for expense in fmodel_with_ie.expenses %}
+                                <li>{{ expense.expense_name }}: {{ expense.value }}</li>
+                            {% endfor %}
+                        </ul>
+                    </li>
                 </ul>
             </li>
         {% endfor %}
     </ul>
     
-
-<body>
-
-    <!-- The Modal for FModel -->
-    <div id="fmodelModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('fmodelModal')">&times;</span>
-            <h2>Create a New Financial Model</h2>
-            <form id="createFModelForm">
-                <input type="hidden" name="user_id" value="{{ user.id }}">
-                <label for="fmodel_name">Name:</label>
-                <input type="text" id="fmodel_name" name="fmodel_name" required>
-                <button type="button" onclick="submitFModelForm()">Create</button>
-            </form>
-        </div>
+    <div>
+        <h2>Create a New Financial Model</h2>
+        <form id="createFModelForm">
+            <input type="hidden" name="user_id" value="{{ user.id }}">
+            <label for="fmodel_name">Name:</label>
+            <input type="text" id="fmodel_name" name="fmodel_name" required>
+            <button type="button" onclick="submitFModelForm()">Create</button>
+        </form>
     </div>
 
-    <!-- The Modal for Income -->
-    <div id="incomeModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('incomeModal')">&times;</span>
-            <h2>Add Income</h2>
-            <form id="createIncomeForm">
-                <input type="hidden" name="user_id" value="{{ user.id }}">
-                <label for="fmodel_name">Financial Model Name:</label>
-                <input type="text" id="fmodel_name" name="fmodel_name" required>
-                <label for="income_name">Income Name:</label>
-                <input type="text" id="income_name" name="income_name" required>
-                <label for="value">Value:</label>
-                <input type="number" step="0.01" id="value" name="value" required>
-                <button type="button" onclick="submitIncomeForm()">Add Income</button>
-            </form>
-        </div>
+    <div>
+    <h2>Add Income</h2>
+        <form id="createIncomeForm">
+            <input type="hidden" name="user_id" value="{{ user.id }}">
+            <label for="fmodel_name">Financial Model Name:</label>
+            <input type="text" id="fmodel_name" name="fmodel_name" required>
+            <label for="income_name">Income Name:</label>
+            <input type="text" id="income_name" name="income_name" required>
+            <label for="value">Value:</label>
+            <input type="number" step="0.01" id="value" name="value" required>
+            <button type="button" onclick="submitIncomeForm()">Add Income</button>
+        </form>
     </div>
 
-    <!-- Buttons to open the modals 
-    <button onclick="openModal('fmodelModal')">Create Financial Model</button>
-    <button onclick="openModal('incomeModal')">Add Income</button> -->
+    <div>
+        <h2>Add Expenses</h2>
+        <form id="createExpenseForm">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ user.id }}">
+            <label for="fmodel_name_expense">Financial Model Name:</label>
+            <input type="text" id="fmodel_name_expense" name="fmodel_name" required>
+            <label for="expense_name">Expense Name:</label>
+            <input type="text" id="expense_name" name="expense_name" required>
+            <label for="expense_value">Amount:</label>
+            <input type="number" step="0.01" id="expense_value" name="value" required>
+            <button type="button" onclick="submitExpenseForm()">Add Expense</button>
+        </form>
+    </div>
 
-    <script>
-        // Functions to open and close modals
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = "block";
-        }
+<script>
+    function submitFModelForm() {
+        var form = document.getElementById('createFModelForm');
+        var formData = new FormData(form);
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = "none";
-        }
+        fetch("{% url 'create_fmodel' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                closeModal('fmodelModal');
+                location.reload(); // Reload the page to see the new FModel
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
 
-        // Functions to submit forms
-        function submitFModelForm() {
-            var form = document.getElementById('createFModelForm');
-            var formData = new FormData(form);
+    function submitIncomeForm() {
+        var form = document.getElementById('createIncomeForm');
+        var formData = new FormData(form);
 
-            fetch("{% url 'create_fmodel' %}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    closeModal('fmodelModal');
-                    location.reload(); // Reload the page to see the new FModel
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
+        fetch("{% url 'create_income' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                closeModal('incomeModal');
+                location.reload(); // Reload the page to see the new Income
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
 
-        function submitIncomeForm() {
-            var form = document.getElementById('createIncomeForm');
-            var formData = new FormData(form);
+    function submitExpenseForm() {
+        const form = document.getElementById('createExpenseForm');
+        const user_id = form.user_id.value;
+        const fmodel_name = form.fmodel_name.value;
+        const expenses = [
+            {
+                expense_name: form.expense_name.value,
+                value: form.value.value
+            }
+        ];
+    
+        const data = {
+            user_id: user_id,
+            fmodel_name: fmodel_name,
+            expenses: expenses
+        };
+    
+        fetch('{% url "create_expense" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error adding expense');
+            }
+            return response.json();
+        })
+        .then(response => {
+            if (response.expenses) {
+                alert('Expense added successfully');
+            } else {
+                alert('An error occurred while adding the expense');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the expense');
+        });
+    }
 
-            fetch("{% url 'create_income' %}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    closeModal('incomeModal');
-                    location.reload(); // Reload the page to see the new Income
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    </script>
-</body>
+</script>
 
 </body>
 </html>

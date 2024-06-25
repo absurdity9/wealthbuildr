@@ -67,6 +67,17 @@ class TestCreateFModel(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), {'error': 'Invalid request method'})
 
+    def test_create_fmodel_duplicate_name(self):
+        initial_fmodel = FModel.objects.create(user=self.user, fmodel_name='Test FModel')
+
+        fmodel_data = {'user_id': self.user.id, 'fmodel_name': 'Test FModel'}
+        response = self.client.post(reverse('create_fmodel'), fmodel_data)
+
+        self.assertEqual(response.status_code, 400)
+
+        response_data = json.loads(response.content)
+        self.assertEqual(response_data, {'error': 'FModel with this name already exists for this user'})
+
 class TestCreateIncome(TestCase):
     def setUp(self):
         self.client = Client()

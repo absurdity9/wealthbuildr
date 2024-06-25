@@ -10,27 +10,30 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, LoginForm
+from django.db import IntegrityError
 
 logger = logging.getLogger(__name__)
 
 @login_required
 def index(request):
     user = request.user
-    fmodels = FModel.objects.filter(user=user).prefetch_related('income_set')
+    fmodels = FModel.objects.filter(user=user).prefetch_related('income_set', 'expense_set')
     fmodel_count = fmodels.count()
 
-    fmodels_with_income = []
+    fmodels_with_income_and_expense = []
     for fmodel in fmodels:
         incomes = Income.objects.filter(fmodel=fmodel)
-        fmodels_with_income.append({
+        expenses = Expense.objects.filter(fmodel=fmodel)
+        fmodels_with_income_and_expense.append({
             'fmodel': fmodel,
-            'incomes': incomes
+            'incomes': incomes,
+            'expenses': expenses
         })
 
     context = {
         'user': user,
         'fmodel_count': fmodel_count,
-        'fmodels_with_income': fmodels_with_income
+        'fmodels_with_income_and_expense': fmodels_with_income_and_expense
     }
 
     return render(request, 'personalfinance/index.html', context)
@@ -95,6 +98,9 @@ def create_fmodel(request):
                 'fmodel_name': fmodel.fmodel_name,
                 'created': fmodel.created.strftime('%Y-%m-%d')
             }, status=201)
+        
+        except IntegrityError:
+            return JsonResponse({'error': 'FModel with this name already exists for this user'}, status=400)
 
         except Exception as e:
             logger.error(f"Error creating FModel: {e}")
