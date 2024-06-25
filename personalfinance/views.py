@@ -16,14 +16,23 @@ logger = logging.getLogger(__name__)
 @login_required
 def index(request):
     user = request.user
-    fmodels = FModel.objects.filter(user=user)
+    fmodels = FModel.objects.filter(user=user).prefetch_related('income_set')
     fmodel_count = fmodels.count()
 
+    fmodels_with_income = []
+    for fmodel in fmodels:
+        incomes = Income.objects.filter(fmodel=fmodel)
+        fmodels_with_income.append({
+            'fmodel': fmodel,
+            'incomes': incomes
+        })
+
     context = {
+        'user': user,
         'fmodel_count': fmodel_count,
-        'fmodels': fmodels
+        'fmodels_with_income': fmodels_with_income
     }
-    
+
     return render(request, 'personalfinance/index.html', context)
 
 def create_user_profile(request):

@@ -1,7 +1,9 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Index</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'personalfinance/styles.css' %}">
 </head>
 <body>
     <a href="{% url 'login' %}">Login</a>
@@ -17,14 +19,20 @@
 
     <h2>Your Financial Models:</h2>
     <ul>
-        {% for fmodel in fmodels %}
-            <li>{{ fmodel.id }}: {{ fmodel.fmodel_name }}</li>
+        {% for fmodel_with_income in fmodels_with_income %}
+            <li>
+                {{ fmodel_with_income.fmodel.id }}: {{ fmodel_with_income.fmodel.fmodel_name }}
+                <ul>
+                    {% for income in fmodel_with_income.incomes %}
+                        <li>{{ income.income_name }}: {{ income.value }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
         {% endfor %}
     </ul>
+    
 
-    <!-- Add this just before the closing </body> tag in your index.html -->
 <body>
-    <!-- Existing content -->
 
     <!-- The Modal for FModel -->
     <div id="fmodelModal" class="modal">
@@ -58,9 +66,9 @@
         </div>
     </div>
 
-    <!-- Buttons to open the modals -->
+    <!-- Buttons to open the modals 
     <button onclick="openModal('fmodelModal')">Create Financial Model</button>
-    <button onclick="openModal('incomeModal')">Add Income</button>
+    <button onclick="openModal('incomeModal')">Add Income</button> -->
 
     <script>
         // Functions to open and close modals
