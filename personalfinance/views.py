@@ -3,10 +3,19 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from personalfinance.models import Userprofile, FModel, Income, Expense, Asset, ProfilePage
-# Create your views here.
+import logging, json
 
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.decorators import login_required
+from .forms import RegisterForm, LoginForm
+
+logger = logging.getLogger(__name__)
+
+@login_required
 def index(request):
-    return HttpResponse("Hello, world. You're at the polls index.")
+    return render(request, 'personalfinance/index.html')
 
 def create_user_profile(request):
 
@@ -114,37 +123,49 @@ def create_income(request):
 
 def create_expense(request):
     if request.method == 'POST':
-        user_id = request.POST.get('user_id')
-        fmodel_name = request.POST.get('fmodel_name')
-        expense_name = request.POST.get('expense_name')
-        value = request.POST.get('value')
-
-        if not (user_id and fmodel_name and expense_name and value):
-            return JsonResponse({'error': 'Missing required fields'}, status=400)
-
         try:
-            user = User.objects.get(id=user_id)
-            fmodel = FModel.objects.get(user=user, fmodel_name=fmodel_name)
-        except (User.DoesNotExist, FModel.DoesNotExist):
-            return JsonResponse({'error': 'User or FModel not found'}, status=400)
+            data = json.loads(request.body)
+            user_id = data.get('user_id')
+            fmodel_name = data.get('fmodel_name')
+            expenses = data.get('expenses')
 
-        try:
-            expense = Expense.objects.create(
-                fmodel=fmodel,
-                expense_name=expense_name,
-                value=value
-            )
+            if not (user_id and fmodel_name and expenses):
+                return JsonResponse({'error': 'Missing required fields'}, status=400)
 
-            return JsonResponse({
-                'id': expense.id,
-                'fmodel_id': expense.fmodel.id,
-                'expense_name': expense.expense_name,
-                'value': str(expense.value)
-            }, status=201)
+            user = User.objects.filter(id=user_id).first()
+            fmodel = FModel.objects.filter(user=user, fmodel_name=fmodel_name).first()
+
+            if not (user and fmodel):
+                return JsonResponse({'error': 'User or FModel not found'}, status=400)
+
+            created_expenses = []
+
+            for expense_data in expenses:
+                expense_name = expense_data.get('expense_name')
+                value = expense_data.get('value')
+
+                if not (expense_name and value):
+                    return JsonResponse({'error': 'Missing required fields in expenses array'}, status=400)
+
+                expense = Expense.objects.create(
+                    fmodel=fmodel,
+                    expense_name=expense_name,
+                    value=value
+                )
+
+                created_expenses.append({
+                    'id': expense.id,
+                    'fmodel_id': expense.fmodel.id,
+                    'expense_name': expense.expense_name,
+                    'value': str(expense.value)
+                })
+
+            return JsonResponse({'expenses': created_expenses}, status=201)
 
         except Exception as e:
             logger.error(f"Error creating Expense: {e}")
             return JsonResponse({'error': 'Internal server error'}, status=500)
+
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
@@ -188,6 +209,7 @@ def create_asset(request):
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 def create_profile_page(request):
+    
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
         fmodel_name = request.POST.get('fmodel_name')
@@ -221,37 +243,29 @@ def create_profile_page(request):
             return JsonResponse({'error': 'Internal server error'}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
-    
+
+def register_view(request):
     if request.method == 'POST':
-        user_id = request.POST.get('user_id')
-        fmodel_id = request.POST.get('fmodel_id')
-        page_name = request.POST.get('page_name')
-
-        if not (user_id and fmodel_id and page_name):
-            return JsonResponse({'error': 'Missing required fields'}, status=400)
-
-        try:
-            user = User.objects.get(id=user_id)
-            fmodel = FModel.objects.get(id=fmodel_id, user=user)
-        except (User.DoesNotExist, FModel.DoesNotExist):
-            return JsonResponse({'error': 'User or FModel not found'}, status=400)
-
-        try:
-            profile_page = ProfilePage.objects.create(
-                user=user,
-                fmodel=fmodel,
-                page_name=page_name
-            )
-
-            return JsonResponse({
-                'id': profile_page.id,
-                'user_id': profile_page.user.id,
-                'fmodel_id': profile_page.fmodel.id,
-                'page_name': profile_page.page_name
-            }, status=201)
-
-        except Exception as e:
-            logger.error(f"Error creating ProfilePage: {e}")
-            return JsonResponse({'error': 'Internal server error'}, status=500)
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('index')
     else:
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
+        form = RegisterForm()
+    return render(request, 'personalfinance/register.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(data=request.POST)
+        if form.is_valid():
+            user = authenticate(username=form.cleaned_data.get('username'), password=form.cleaned_data.get('password'))
+            if user is not None:
+                login(request, user)
+                return redirect('index')
+    else:
+        form = LoginForm()
+    return render(request, 'login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)

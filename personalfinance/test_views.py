@@ -108,29 +108,51 @@ class TestCreateExpense(TestCase):
         self.fmodel = FModel.objects.create(user=self.user, fmodel_name='Test FModel')
 
     def test_create_expense_valid_request(self):
-        expense_data = {'user_id': self.user.id, 'fmodel_name': 'Test FModel', 'expense_name': 'Test Expense', 'value': '500.00'}
-        response = self.client.post(reverse('create_expense'), expense_data)
+        expense_data = {
+            'user_id': self.user.id,
+            'fmodel_name': 'Test FModel',
+            'expenses': [
+                {'expense_name': 'Rent', 'value': '1000.00'},
+                {'expense_name': 'Groceries', 'value': '200.00'}
+            ]
+        }
+        response = self.client.post(reverse('create_expense'), json.dumps(expense_data), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
         response_data = json.loads(response.content)
-        fmodel = FModel.objects.get(user=self.user, fmodel_name=expense_data['fmodel_name'])
-        self.assertEqual(response_data['fmodel_id'], fmodel.id)
-        self.assertEqual(response_data['expense_name'], 'Test Expense')
-        self.assertEqual(response_data['value'], '500.00')
+        self.assertEqual(len(response_data['expenses']), 2)
 
-    def test_create_expense_non_existent_user_or_fmodel(self):
-        expense_data = {'user_id': 123456, 'fmodel_name': 'NonExistent FModel', 'expense_name': 'Test Expense', 'value': '500.00'}
-        response = self.client.post(reverse('create_expense'), expense_data)
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.content), {'error': 'User or FModel not found'})
+        for expense in response_data['expenses']:
+            self.assertEqual(expense['fmodel_id'], 1)
+            self.assertIn(expense['expense_name'], ['Rent', 'Groceries'])
+            self.assertIn(expense['value'], ['1000.00', '200.00'])
 
-    def test_create_expense_missing_data(self):
-        expense_data = {'user_id': self.user.id, 'fmodel_name': 'Test FModel', 'expense_name': 'Test Expense'}
-        response = self.client.post(reverse('create_expense'), expense_data)
+    def test_create_expense_missing_required_fields(self):
+        expense_data = {
+            'user_id': self.user.id,
+            'expenses': [
+                {'expense_name': 'Rent', 'value': '1000.00'},
+                {'expense_name': 'Groceries'}
+            ]
+        }
+        response = self.client.post(reverse('create_expense'), json.dumps(expense_data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), {'error': 'Missing required fields'})
 
-    def test_create_expense_non_post_request(self):
+    def test_create_expense_user_or_fmodel_not_found(self):
+        expense_data = {
+            'user_id': 999,
+            'fmodel_name': 'Non-existent FModel',
+            'expenses': [
+                {'expense_name': 'Rent', 'value': '1000.00'},
+                {'expense_name': 'Groceries', 'value': '200.00'}
+            ]
+        }
+        response = self.client.post(reverse('create_expense'), json.dumps(expense_data), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content), {'error': 'User or FModel not found'})
+
+    def test_create_expense_invalid_request_method(self):
         response = self.client.get(reverse('create_expense'))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), {'error': 'Invalid request method'})
