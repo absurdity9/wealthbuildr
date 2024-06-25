@@ -6,14 +6,120 @@
 <body>
     <a href="{% url 'login' %}">Login</a>
     <a href="{% url 'register' %}">Signup</a>
-    {% if user.is_authenticated %}
+
     <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: inline;">
         {% csrf_token %}
         <button type="submit">Logout</button>
     </form>
-    {% endif %}
-    
-    <h2>Index</h2>
-    <p>Welcome, {{ user.username }}!</p>
+
+    <h2>Welcome {{ user.username }} Your Personal Finance Dashboard</h2>
+    <p>You have {{ fmodel_count }} financial models.</p>
+
+    <h2>Your Financial Models:</h2>
+    <ul>
+        {% for fmodel in fmodels %}
+            <li>{{ fmodel.id }}: {{ fmodel.fmodel_name }}</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Add this just before the closing </body> tag in your index.html -->
+<body>
+    <!-- Existing content -->
+
+    <!-- The Modal for FModel -->
+    <div id="fmodelModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('fmodelModal')">&times;</span>
+            <h2>Create a New Financial Model</h2>
+            <form id="createFModelForm">
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                <label for="fmodel_name">Name:</label>
+                <input type="text" id="fmodel_name" name="fmodel_name" required>
+                <button type="button" onclick="submitFModelForm()">Create</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- The Modal for Income -->
+    <div id="incomeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('incomeModal')">&times;</span>
+            <h2>Add Income</h2>
+            <form id="createIncomeForm">
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                <label for="fmodel_name">Financial Model Name:</label>
+                <input type="text" id="fmodel_name" name="fmodel_name" required>
+                <label for="income_name">Income Name:</label>
+                <input type="text" id="income_name" name="income_name" required>
+                <label for="value">Value:</label>
+                <input type="number" step="0.01" id="value" name="value" required>
+                <button type="button" onclick="submitIncomeForm()">Add Income</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Buttons to open the modals -->
+    <button onclick="openModal('fmodelModal')">Create Financial Model</button>
+    <button onclick="openModal('incomeModal')">Add Income</button>
+
+    <script>
+        // Functions to open and close modals
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = "block";
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        // Functions to submit forms
+        function submitFModelForm() {
+            var form = document.getElementById('createFModelForm');
+            var formData = new FormData(form);
+
+            fetch("{% url 'create_fmodel' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    closeModal('fmodelModal');
+                    location.reload(); // Reload the page to see the new FModel
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function submitIncomeForm() {
+            var form = document.getElementById('createIncomeForm');
+            var formData = new FormData(form);
+
+            fetch("{% url 'create_income' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    closeModal('incomeModal');
+                    location.reload(); // Reload the page to see the new Income
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+
 </body>
 </html>

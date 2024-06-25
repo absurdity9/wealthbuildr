@@ -15,7 +15,16 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def index(request):
-    return render(request, 'personalfinance/index.html')
+    user = request.user
+    fmodels = FModel.objects.filter(user=user)
+    fmodel_count = fmodels.count()
+
+    context = {
+        'fmodel_count': fmodel_count,
+        'fmodels': fmodels
+    }
+    
+    return render(request, 'personalfinance/index.html', context)
 
 def create_user_profile(request):
 

@@ -3,7 +3,8 @@
 <head>
     <title>Login</title>
 </head>
-<body>
+<body>    
+    <a href="{% url 'register' %}">Signup</a>
     <h2>Login</h2>
     <form method="post">
         {% csrf_token %}
