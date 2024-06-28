@@ -168,38 +168,60 @@ class TestCreateExpense(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), {'error': 'Invalid request method'})
 
-class TestCreateAsset(TestCase):
+class TestCreateAssets(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='testuser', password='testpass')
         self.fmodel = FModel.objects.create(user=self.user, fmodel_name='Test FModel')
 
-    def test_create_asset_valid_request(self):
-        asset_data = {'user_id': self.user.id, 'fmodel_name': 'Test FModel', 'asset_name': 'Test Asset', 'yield_rate': '5.0', 'principle_amount': '1000.00'}
-        response = self.client.post(reverse('create_asset'), asset_data)
+    def test_create_assets_valid_request(self):
+        assets_data = {
+            'user_id': self.user.id,
+            'fmodel_name': 'Test FModel',
+            'assets': [
+                {'asset_name': 'Stocks', 'yield_rate': '0.05', 'principle_amount': '10000.00'},
+                {'asset_name': 'Bonds', 'yield_rate': '0.03', 'principle_amount': '5000.00'}
+            ]
+        }
+        response = self.client.post(reverse('create_assets'), json.dumps(assets_data), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
         response_data = json.loads(response.content)
-        fmodel = FModel.objects.get(user=self.user, fmodel_name=asset_data['fmodel_name'])
-        self.assertEqual(response_data['fmodel_id'], fmodel.id)
-        self.assertEqual(response_data['asset_name'], 'Test Asset')
-        self.assertEqual(response_data['yield_rate'], '5.0')
-        self.assertEqual(response_data['principle_amount'], '1000.00')
+        self.assertEqual(len(response_data['assets']), 2)
 
-    def test_create_asset_non_existent_user_or_fmodel(self):
-        asset_data = {'user_id': 123456, 'fmodel_name': 'NonExistent FModel', 'asset_name': 'Test Asset', 'yield_rate': '5.0', 'principle_amount': '1000.00'}
-        response = self.client.post(reverse('create_asset'), asset_data)
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.content), {'error': 'User or FModel not found'})
+        for asset in response_data['assets']:
+            self.assertEqual(asset['fmodel_id'], 1)
+            self.assertIn(asset['asset_name'], ['Stocks', 'Bonds'])
+            self.assertIn(asset['yield_rate'], ['0.05', '0.03'])
+            self.assertIn(asset['principle_amount'], ['10000.00', '5000.00'])
 
-    def test_create_asset_missing_data(self):
-        asset_data = {'user_id': self.user.id, 'fmodel_name': 'Test FModel', 'asset_name': 'Test Asset', 'yield_rate': '5.0'}
-        response = self.client.post(reverse('create_asset'), asset_data)
+    def test_create_assets_missing_required_fields(self):
+        assets_data = {
+            'user_id': self.user.id,
+            'assets': [
+                {'asset_name': 'Stocks', 'yield_rate': '0.05', 'principle_amount': '10000.00'},
+                {'asset_name': 'Bonds'}
+            ]
+        }
+        response = self.client.post(reverse('create_assets'), json.dumps(assets_data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), {'error': 'Missing required fields'})
 
-    def test_create_asset_non_post_request(self):
-        response = self.client.get(reverse('create_asset'))
+    def test_create_assets_user_or_fmodel_not_found(self):
+        assets_data = {
+            'user_id': 999,
+            'fmodel_name': 'Non-existent FModel',
+            'assets': [
+                {'asset_name': 'Stocks', 'yield_rate': '0.05', 'principle_amount': '10000.00'},
+                {'asset_name': 'Bonds', 'yield_rate': '0.03', 'principle_amount': '5000.00'}
+            ]
+        }
+        response = self.client.post(reverse('create_assets'), json.dumps(assets_data), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content), {'error': 'User or FModel not found'})
+
+    def test_create_assets_invalid_request_method(self):
+        response = self.client.get(reverse('create_assets'))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), {'error': 'Invalid request method'})
 

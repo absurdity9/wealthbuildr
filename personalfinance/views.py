@@ -193,45 +193,56 @@ def create_expense(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-def create_asset(request):
+def create_assets(request):
     if request.method == 'POST':
-        user_id = request.POST.get('user_id')
-        fmodel_name = request.POST.get('fmodel_name')
-        asset_name = request.POST.get('asset_name')
-        yield_rate = request.POST.get('yield_rate')
-        principle_amount = request.POST.get('principle_amount')
-
-        if not (user_id and fmodel_name and asset_name and yield_rate and principle_amount):
-            return JsonResponse({'error': 'Missing required fields'}, status=400)
-
         try:
-            user = User.objects.get(id=user_id)
-            fmodel = FModel.objects.get(user=user, fmodel_name=fmodel_name)
-        except (User.DoesNotExist, FModel.DoesNotExist):
-            return JsonResponse({'error': 'User or FModel not found'}, status=400)
+            data = json.loads(request.body)
+            user_id = data.get('user_id')
+            fmodel_name = data.get('fmodel_name')
+            assets = data.get('assets')
 
-        try:
-            asset = Asset.objects.create(
-                fmodel=fmodel,
-                asset_name=asset_name,
-                yield_rate=yield_rate,
-                principle_amount=principle_amount
-            )
+            if not (user_id and fmodel_name and assets):
+                return JsonResponse({'error': 'Missing required fields'}, status=400)
 
-            return JsonResponse({
-                'id': asset.id,
-                'fmodel_id': asset.fmodel.id,
-                'asset_name': asset.asset_name,
-                'yield_rate': str(asset.yield_rate),
-                'principle_amount': str(asset.principle_amount)
-            }, status=201)
+            user = User.objects.filter(id=user_id).first()
+            fmodel = FModel.objects.filter(user=user, fmodel_name=fmodel_name).first()
+
+            if not (user and fmodel):
+                return JsonResponse({'error': 'User or FModel not found'}, status=400)
+
+            created_assets = []
+
+            for asset_data in assets:
+                asset_name = asset_data.get('asset_name')
+                yield_rate = asset_data.get('yield_rate')
+                principle_amount = asset_data.get('principle_amount')
+
+                if not (asset_name and yield_rate and principle_amount):
+                    return JsonResponse({'error': 'Missing required fields in assets array'}, status=400)
+
+                asset = Asset.objects.create(
+                    fmodel=fmodel,
+                    asset_name=asset_name,
+                    yield_rate=yield_rate,
+                    principle_amount=principle_amount
+                )
+
+                created_assets.append({
+                    'id': asset.id,
+                    'fmodel_id': asset.fmodel.id,
+                    'asset_name': asset.asset_name,
+                    'yield_rate': str(asset.yield_rate),
+                    'principle_amount': str(asset.principle_amount)
+                })
+
+            return JsonResponse({'assets': created_assets}, status=201)
 
         except Exception as e:
             logger.error(f"Error creating Asset: {e}")
             return JsonResponse({'error': 'Internal server error'}, status=500)
+
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
-
 def create_profile_page(request):
     
     if request.method == 'POST':
