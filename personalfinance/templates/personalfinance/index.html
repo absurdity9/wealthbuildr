@@ -186,10 +186,12 @@
         })
         .then(response => response.json())
         .then(data => {
+            console.log('Response:', data); // Log the response to the console
             if (data.error) {
                 alert(data.error);
             } else {
                 alert('Expenses created successfully');
+                // Optionally, update the UI with the new expense data
             }
         })
         .catch(error => console.error('Error:', error));
