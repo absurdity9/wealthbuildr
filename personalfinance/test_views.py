@@ -258,3 +258,39 @@ class TestCreateProfilePage(TestCase):
         response = self.client.get(reverse('create_profile_page'))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), {'error': 'Invalid request method'})
+
+class TestEditFmodelName(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.fmodel = FModel.objects.create(user=self.user, fmodel_name='Test FModel')
+
+    def test_edit_fmodel_name_valid_request(self):
+        new_name = 'Updated FModel Name'
+        response = self.client.post(
+            reverse('edit_fmodel_name', args=[1]),
+            {'new_name': new_name},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), {'message': 'FModel name updated successfully'})
+
+    def test_edit_fmodel_name_missing_new_name(self):
+        response = self.client.post(
+            reverse('edit_fmodel_name', args=[1]),
+            {},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content), {'error': 'New name is required'})
+
+    def test_edit_fmodel_name_non_existent_fmodel(self):
+        new_name = 'Updated FModel Name'
+        response = self.client.post(
+            reverse('edit_fmodel_name', args=[999]),
+            {'new_name': new_name},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 500)
+        response_data = json.loads(response.content)
+        self.assertEqual(response_data['error'], 'Internal server error')

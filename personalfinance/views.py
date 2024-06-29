@@ -11,6 +11,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, LoginForm
 from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
 
 logger = logging.getLogger(__name__)
 
@@ -245,6 +246,7 @@ def create_assets(request):
 
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+    
 def create_profile_page(request):
     
     if request.method == 'POST':
@@ -306,3 +308,22 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
+
+def edit_fmodel_name(request, fmodel_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            new_name = data.get('new_name')
+            if not new_name:
+                return JsonResponse({'error': 'New name is required'}, status=400)
+
+            fmodel = get_object_or_404(FModel, id=fmodel_id)
+            fmodel.fmodel_name = new_name
+            fmodel.save()
+
+            return JsonResponse({'message': 'FModel name updated successfully'}, status=200)
+        except Exception as e:
+            logger.error(f"Error updating FModel: {e}")
+            return JsonResponse({'error': 'Internal server error'}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)

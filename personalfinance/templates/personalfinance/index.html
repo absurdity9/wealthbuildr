@@ -116,6 +116,16 @@
         </form>
     </div>
 
+    <div>
+        <h2>Edit FModel Name</h2>
+        <form id="editFmodelForm" method="post" action="{% url 'edit_fmodel_name' fmodel.id %}">
+            {% csrf_token %}
+            <label for="fmodel_name">New Financial Model Name:</label>
+            <input type="text" id="fmodel_name" name="fmodel_name" required>
+            <button type="button" onclick="submitEditFmodelForm()">Edit FModel Name</button>
+        </form>
+    </div>
+
 <script>
     function submitFModelForm() {
         var form = document.getElementById('createFModelForm');
@@ -289,6 +299,33 @@
             .catch(error => console.error('Error:', error));
         }
 
+        function submitEditFmodelForm() {
+            const form = document.getElementById('editFmodelForm');
+            const formData = new FormData(form);
+            const new_name = formData.get('fmodel_name');
+            const csrftoken = formData.get('csrfmiddlewaretoken');
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ new_name: new_name })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response:', data);
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert('FModel name updated successfully');
+                    // Optionally, update the UI with the new FModel name
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        
 </script>
 
 </body>
