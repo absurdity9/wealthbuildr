@@ -19,27 +19,30 @@
 
     <h2>Your Financial Models:</h2>
     <ul>
-        {% for fmodel_with_ie in fmodels_with_income_and_expense %}
-            <li>
-                FModel ID: {{ fmodel_with_ie.fmodel.id }} </br>
-                {{ fmodel_with_ie.fmodel.fmodel_name }}
-                <ul>
-                    <li><strong>Incomes:</strong>
-                        <ul>
-                            {% for income in fmodel_with_ie.incomes %}
-                                <li>{{ income.income_name }}: {{ income.value }}</li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                    <li><strong>Expenses:</strong>
-                        <ul>
-                            {% for expense in fmodel_with_ie.expenses %}
-                                <li>{{ expense.expense_name }}: {{ expense.value }}</li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                </ul>
-            </li>
+        {% for fmodel_data in fmodels_with_income_expense_and_assets %}
+            <h3>{{ fmodel_data.fmodel.fmodel_name }}</h3>
+            
+            <h4>Incomes</h4>
+            <ul>
+                {% for income in fmodel_data.incomes %}
+                    <li>{{ income.income_name }}: {{ income.value }}</li>
+                {% endfor %}
+            </ul>
+
+            <h4>Expenses</h4>
+            <ul>
+                {% for expense in fmodel_data.expenses %}
+                    <li>{{ expense.expense_name }}: {{ expense.value }}</li>
+                {% endfor %}
+            </ul>
+
+            <h4>Assets</h4>
+            <ul>
+                {% for asset in fmodel_data.assets %}
+                    <li>{{ asset.asset_name }}: Yield Rate {{ asset.yield_rate }}, Principle Amount {{ asset.principle_amount }}</li>
+                {% endfor %}
+            </ul>
+
         {% endfor %}
     </ul>
     
@@ -86,6 +89,30 @@
             
             <button type="button" onclick="addExpenseEntry()">Add Expense</button>
             <button type="button" onclick="submitExpenseForm()">Submit Expenses</button>
+        </form>
+    </div>
+
+    <div>
+        <h2>Add Assets</h2>
+        <form id="createAssetForm" method="post" action="{% url 'create_assets' %}">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ user.id }}">
+            <label for="fmodel_name_asset">Financial Model Name:</label>
+            <input type="text" id="fmodel_name_asset" name="fmodel_name" required>
+            
+            <div id="assetsContainer">
+                <div class="asset-entry">
+                    <label for="asset_name_0">Asset Name:</label>
+                    <input type="text" id="asset_name_0" name="asset_name" required>
+                    <label for="yield_rate_0">Yield Rate:</label>
+                    <input type="number" step="0.01" id="yield_rate_0" name="yield_rate" required>
+                    <label for="principle_amount_0">Principle Amount:</label>
+                    <input type="number" step="0.01" id="principle_amount_0" name="principle_amount" required>
+                </div>
+            </div>
+            
+            <button type="button" onclick="addAssetEntry()">Add Asset</button>
+            <button type="button" onclick="submitAssetForm()">Submit Assets</button>
         </form>
     </div>
 
@@ -196,6 +223,71 @@
         })
         .catch(error => console.error('Error:', error));
     }
+
+    let assetCount = 1;
+
+        function addAssetEntry() {
+            const assetsContainer = document.getElementById('assetsContainer');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'asset-entry';
+            newEntry.innerHTML = `
+                <label for="asset_name_${assetCount}">Asset Name:</label>
+                <input type="text" id="asset_name_${assetCount}" name="asset_name" required>
+                <label for="yield_rate_${assetCount}">Yield Rate:</label>
+                <input type="number" step="0.01" id="yield_rate_${assetCount}" name="yield_rate" required>
+                <label for="principle_amount_${assetCount}">Principle Amount:</label>
+                <input type="number" step="0.01" id="principle_amount_${assetCount}" name="principle_amount" required>
+            `;
+            assetsContainer.appendChild(newEntry);
+            assetCount++;
+        }
+
+        function submitAssetForm() {
+            const form = document.getElementById('createAssetForm');
+            const formData = new FormData(form);
+            const assetsContainer = document.getElementById('assetsContainer');
+            const assetEntries = assetsContainer.getElementsByClassName('asset-entry');
+
+            const assets = [];
+            for (let i = 0; i < assetEntries.length; i++) {
+                const assetName = assetEntries[i].querySelector(`[id^='asset_name_']`).value;
+                const yieldRate = assetEntries[i].querySelector(`[id^='yield_rate_']`).value;
+                const principleAmount = assetEntries[i].querySelector(`[id^='principle_amount_']`).value;
+                assets.push({
+                    asset_name: assetName,
+                    yield_rate: yieldRate,
+                    principle_amount: principleAmount
+                });
+            }
+
+            const data = {
+                user_id: formData.get('user_id'),
+                fmodel_name: formData.get('fmodel_name'),
+                assets: assets
+            };
+
+            const csrftoken = formData.get('csrfmiddlewaretoken');
+
+            fetch('{% url "create_assets" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response:', data); // Log the response to the console
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert('Assets created successfully');
+                    // Optionally, update the UI with the new asset data
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
 
 </script>
 

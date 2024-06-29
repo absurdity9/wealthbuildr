@@ -17,23 +17,25 @@ logger = logging.getLogger(__name__)
 @login_required
 def index(request):
     user = request.user
-    fmodels = FModel.objects.filter(user=user).prefetch_related('income_set', 'expense_set')
+    fmodels = FModel.objects.filter(user=user).prefetch_related('income_set', 'expense_set', 'asset_set')
     fmodel_count = fmodels.count()
 
-    fmodels_with_income_and_expense = []
+    fmodels_with_income_expense_and_assets = []
     for fmodel in fmodels:
         incomes = Income.objects.filter(fmodel=fmodel)
         expenses = Expense.objects.filter(fmodel=fmodel)
-        fmodels_with_income_and_expense.append({
+        assets = Asset.objects.filter(fmodel=fmodel)
+        fmodels_with_income_expense_and_assets.append({
             'fmodel': fmodel,
             'incomes': incomes,
-            'expenses': expenses
+            'expenses': expenses,
+            'assets': assets
         })
 
     context = {
         'user': user,
         'fmodel_count': fmodel_count,
-        'fmodels_with_income_and_expense': fmodels_with_income_and_expense
+        'fmodels_with_income_expense_and_assets': fmodels_with_income_expense_and_assets
     }
 
     return render(request, 'personalfinance/index.html', context)
