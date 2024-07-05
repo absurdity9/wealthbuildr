@@ -30,14 +30,14 @@ def index(request):
             'fmodel': fmodel,
             'incomes': incomes,
             'expenses': expenses,
-            'assets': assets
+            'assets': assets,
+            'created': fmodel.created
         })
 
     context = {
         'user': user,
         'fmodel_count': fmodel_count,
-        'fmodels_with_income_expense_and_assets': fmodels_with_income_expense_and_assets
-    }
+        'fmodels_with_income_expense_and_assets': fmodels_with_income_expense_and_assets    }
 
     return render(request, 'personalfinance/index.html', context)
 
@@ -246,7 +246,7 @@ def create_assets(request):
 
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
-    
+        
 def create_profile_page(request):
     
     if request.method == 'POST':

@@ -12,7 +12,7 @@ class FModel(models.Model):
     id = models.IntegerField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     fmodel_name = models.CharField(max_length=100)
-    created = models.DateField(auto_now=True)
+    created = models.DateField(auto_now_add=True)
 
     class Meta:
         constraints = [

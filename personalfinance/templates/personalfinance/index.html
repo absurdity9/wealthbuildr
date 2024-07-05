@@ -1,53 +1,46 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Index</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'personalfinance/styles.css' %}">
-    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script></head>
-<body>
-    <a href="{% url 'login' %}">Login</a>
-    <a href="{% url 'register' %}">Signup</a>
+{% extends 'nav.html' %}
 
-    <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: inline;">
-        {% csrf_token %}
-        <button type="submit">Logout</button>
-    </form>
+{% block title %}Home Page{% endblock %}
 
-    <h2>Welcome {{ user.username }} Your Personal Finance Dashboard</h2>
-    <p>You have {{ fmodel_count }} financial models.</p>
+{% block content %}
+<div class="container" data-theme="dark">
 
-    <h2>Your Financial Models:</h2>
+    <h2 class="title">Welcome {{ user.username }} Your Personal Finance Dashboard</h2>
+    <p>You have {{ fmodel_count }} financial models.</p>    
+
+    <h2 class="title">Your Financial Models:</h2>
     <ul>
         {% for fmodel_data in fmodels_with_income_expense_and_assets %}
-            <h3>{{ fmodel_data.fmodel.fmodel_name }}</h3>
-            
-            <h4>Incomes</h4>
-            <ul>
-                {% for income in fmodel_data.incomes %}
-                    <li>{{ income.income_name }}: {{ income.value }}</li>
-                {% endfor %}
-            </ul>
+            <li>
+                <h3 class="title">{{ fmodel_data.fmodel.fmodel_name }}</h3>
+                <p>Created on: {{ fmodel_data.created }}</p> <!-- Display created date -->
 
-            <h4>Expenses</h4>
-            <ul>
-                {% for expense in fmodel_data.expenses %}
-                    <li>{{ expense.expense_name }}: {{ expense.value }}</li>
-                {% endfor %}
-            </ul>
+                <h4 class="title">Incomes</h4>
+                <ul>
+                    {% for income in fmodel_data.incomes %}
+                        <li>{{ income.income_name }}: {{ income.value }}</li>
+                    {% endfor %}
+                </ul>
 
-            <h4>Assets</h4>
-            <ul>
-                {% for asset in fmodel_data.assets %}
-                    <li>{{ asset.asset_name }}: Yield Rate {{ asset.yield_rate }}, Principle Amount {{ asset.principle_amount }}</li>
-                {% endfor %}
-            </ul>
+                <h4 class="title">Expenses</h4>
+                <ul>
+                    {% for expense in fmodel_data.expenses %}
+                        <li>{{ expense.expense_name }}: {{ expense.value }}</li>
+                    {% endfor %}
+                </ul>
 
+                <h4 class="title">Assets</h4>
+                <ul>
+                    {% for asset in fmodel_data.assets %}
+                        <li>{{ asset.asset_name }}: Yield Rate {{ asset.yield_rate }}, Principal Amount {{ asset.principal_amount }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
         {% endfor %}
     </ul>
-    
+
     <div>
-        <h2>Create a New Financial Model</h2>
+        <h2 class="title">Create a New Financial Model</h2>
         <form id="createFModelForm">
             <input type="hidden" name="user_id" value="{{ user.id }}">
             <label for="fmodel_name">Name:</label>
@@ -57,7 +50,7 @@
     </div>
 
     <div>
-    <h2>Add Income</h2>
+        <h2 class="title">Add Income</h2>
         <form id="createIncomeForm">
             <input type="hidden" name="user_id" value="{{ user.id }}">
             <label for="fmodel_name">Financial Model Name:</label>
@@ -71,7 +64,7 @@
     </div>
 
     <div>
-        <h2>Add Expenses</h2>
+        <h2 class="title">Add Expenses</h2>
         <form id="createExpenseForm">
             {% csrf_token %}
             <input type="hidden" name="user_id" value="{{ user.id }}">
@@ -93,7 +86,7 @@
     </div>
 
     <div>
-        <h2>Add Assets</h2>
+        <h2 class="title">Add Assets</h2>
         <form id="createAssetForm" method="post" action="{% url 'create_assets' %}">
             {% csrf_token %}
             <input type="hidden" name="user_id" value="{{ user.id }}">
@@ -106,7 +99,7 @@
                     <input type="text" id="asset_name_0" name="asset_name" required>
                     <label for="yield_rate_0">Yield Rate:</label>
                     <input type="number" step="0.01" id="yield_rate_0" name="yield_rate" required>
-                    <label for="principle_amount_0">Principle Amount:</label>
+                    <label for="principle_amount_0">Principal Amount:</label>
                     <input type="number" step="0.01" id="principle_amount_0" name="principle_amount" required>
                 </div>
             </div>
@@ -115,16 +108,8 @@
             <button type="button" onclick="submitAssetForm()">Submit Assets</button>
         </form>
     </div>
+</div>
 
-    <div>
-        <h2>Edit FModel Name</h2>
-        <form id="editFmodelForm" method="post" action="{% url 'edit_fmodel_name' fmodel.id %}">
-            {% csrf_token %}
-            <label for="fmodel_name">New Financial Model Name:</label>
-            <input type="text" id="fmodel_name" name="fmodel_name" required>
-            <button type="button" onclick="submitEditFmodelForm()">Edit FModel Name</button>
-        </form>
-    </div>
 
 <script>
     function submitFModelForm() {
@@ -328,5 +313,4 @@
         
 </script>
 
-</body>
-</html>
+{% endblock %}
