@@ -106,18 +106,19 @@
     document.addEventListener('DOMContentLoaded', function() {
         const fmodelsData = JSON.parse('{{ fmodels_data | escapejs }}');
         const fmodelContainer = document.getElementById('fmodel-container');
-
+        let duration = 5; // Set the duration to 5 years
+    
         for (const fmodelId in fmodelsData) {
             const fmodel = fmodelsData[fmodelId];
-
+    
             const GrosstotalIncome = fmodel.incomes.reduce((sum, income) => sum + parseFloat(income.value), 0);
             const totalIncome = calculateNetSalary(GrosstotalIncome);
             const totalExpense = fmodel.expenses.reduce((sum, expense) => sum + parseFloat(expense.value), 0);
             const remainder = totalIncome - totalExpense;
-
+    
             const cashflowCanvasId = `cashInChart-${fmodelId}`; // Unique canvas ID for cashflow chart
             const assetCanvasId = `assetChart-${fmodelId}`; // Unique canvas ID for asset chart
-
+    
             const card = document.createElement('div');
             card.classList.add('column', 'is-full');
             const cardContent = `
@@ -134,7 +135,7 @@
                             <div class="mb-4">
                                 <p>Created on: ${fmodel.model_info.date_created}</p>
                             </div>
-
+    
                             <!-- Row 2: Cash / Yield / Wealth metrics -->
                             <div class="columns">
                                 <div class="column">
@@ -164,10 +165,11 @@
                                         ${fmodel.assets.map(asset => `
                                             <li>${asset.asset_name}: Yield Rate ${asset.yield_rate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, Principal Amount: ${asset.principle_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
                                         `).join('')}
+                                        <li><p id="total-after-5-years-${fmodelId}" class="mt-4"></p>
                                     </ul>
                                 </div>
                             </div>
-
+    
                             <!-- Row 3: Charts -->
                             <div class="columns">
                                 <div class="column is-half">
@@ -183,9 +185,8 @@
             `;
             card.innerHTML = cardContent;
             fmodelContainer.appendChild(card);
-
-            // Cashflow chart
-            const ctxCashflow = document.getElementById(cashflowCanvasId).getContext('2d');
+    
+            const ctxCashflow = document.getElementById(cashflowCanvasId).getContext('2d'); // Cashflow chart
             new Chart(ctxCashflow, {
                 type: 'bar',
                 data: {
@@ -208,20 +209,27 @@
                     }
                 }
             });
+    
+            const assetYearlyAmounts = fmodel.assets.map(asset => calculateROI(asset.principle_amount, asset.yield_rate, duration).yearlyAmounts);
 
-            // Asset chart
-            const ctxAsset = document.getElementById(assetCanvasId).getContext('2d');
+            const totalAfter5Years = fmodel.assets.reduce((sum, asset) => {
+                return sum + calculateROI(asset.principle_amount, asset.yield_rate, duration).total;
+            }, 0);
+    
+            document.getElementById(`total-after-5-years-${fmodelId}`).textContent = `Total After 5 Years for All Assets: £${totalAfter5Years.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;    
+    
+            const ctxAsset = document.getElementById(assetCanvasId).getContext('2d'); // Asset Chart
             new Chart(ctxAsset, {
                 type: 'bar',
                 data: {
-                    labels: fmodel.assets.map(asset => asset.asset_name),
-                    datasets: [{
-                        label: 'Asset Principal Amounts',
-                        data: fmodel.assets.map(asset => asset.principle_amount),
-                        backgroundColor: '#ffa726',
-                        borderColor: '#fb8c00',
+                    labels: Array.from({ length: duration }, (_, i) => `Year ${i + 1}`),
+                    datasets: assetYearlyAmounts.map((yearlyAmounts, index) => ({
+                        label: fmodel.assets[index].asset_name,
+                        data: yearlyAmounts.slice(1),
+                        backgroundColor: `rgba(255, 159, 64, ${(index + 1) / fmodel.assets.length})`,
+                        borderColor: `rgba(255, 159, 64, 1)`,
                         borderWidth: 1
-                    }]
+                    }))
                 },
                 options: {
                     responsive: true,
@@ -235,5 +243,6 @@
             });
         }
     });
+    
 </script>
 {% endblock %}

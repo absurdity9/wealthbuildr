@@ -47,9 +47,10 @@ function calculateNetSalary(annualGrossSalary) {
   function calculateROI(initialAmount, yieldRate, duration) {
     let accumulatedAmount = initialAmount;
     let yearlyAmounts = [initialAmount]; // Initialize the array with the initial amount
-  
+    const adjustedYieldRate = yieldRate / 100; 
+
     for (let year = 1; year <= duration; year++) {
-      accumulatedAmount += accumulatedAmount * yieldRate;
+      accumulatedAmount += accumulatedAmount * adjustedYieldRate;
       yearlyAmounts.push(accumulatedAmount);
     }
   
@@ -58,11 +59,3 @@ function calculateNetSalary(annualGrossSalary) {
       yearlyAmounts: yearlyAmounts
     };
   }
-  
-  const initialSavingsAmount = 1000;
-  const savingsRate = 0.05;
-  const duration = 5;
-  
-  const result = calculateROI(initialSavingsAmount, savingsRate, duration);
-  console.log(result.total); // Output the total amount after 5 years
-  console.log(result.yearlyAmounts); // Output the array of accumulated amounts for each year
