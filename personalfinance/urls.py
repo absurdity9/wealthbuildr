@@ -2,6 +2,8 @@ from django.urls import path
 from .import views
 from .views  import index, create_user_profile, create_fmodel, create_income, create_expense, create_assets, create_profile_page, register_view, login_view, edit_fmodel_name
 from django.contrib.auth.views import LogoutView
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('', views.index, name="index"),

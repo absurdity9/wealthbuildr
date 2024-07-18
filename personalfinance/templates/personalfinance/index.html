@@ -1,10 +1,11 @@
 {% extends 'nav.html' %}
+{% load static %}
 
 {% block title %}Home Page{% endblock %}
 
 {% block content %}
 <div class="container" data-theme="dark">
-    <section class="section">
+    <section class="section">  
         <div class="columns is-vcentered"> <!-- Title -->
             <div class="column">
                 <h1 class="title is-3">Your Personal Finance Dashboard</h1>
@@ -14,90 +15,18 @@
                 <button class="button is-primary">Add Model</button>
             </div>
         </div>
-            
+
         <div class="columns my-5"> <!-- Fmodel Count -->
-            <p>You have {{ fmodel_count }} financial models.</p>    
+            <p>You have {{ fmodel_count }} financial models.</p>
         </div>
 
-        <div class="columns is-multiline">
-            {% for fmodel_data in fmodels_with_income_expense_and_assets %}
-                <div class="column is-full">
-                    <div class="card">  <!-- Cards for each Fmodel -->
-                        <header class="card-header">
-                            <p class="card-header-title">
-                                {{ fmodel_data.fmodel.fmodel_name }}
-                            </p>
-                            <div class="card-header-icon">
-                                <button class="button is-small is-dark mr-2" aria-label="edit">
-                                    <span class="icon is-small">
-                                        <i class="fas fa-edit"></i>
-                                    </span>
-                                </button>
-                                <button class="button is-small is-dark mr-2" aria-label="share">
-                                    <span class="icon is-small">
-                                        <i class="fas fa-share"></i>
-                                    </span>
-                                </button>
-                                <button class="button is-small is-primary">
-                                    Edit Model
-                                </button>
-                            </div>
-                        </header>
-                        <div class="card-content">
-                        <div class="content">
-                            <!-- Row 1: Created on  -->
-                            <div class="mb-4">
-                                <p>Created on: {{ fmodel_data.created }}</p>
-                            </div>
-
-                            <!-- Row 2: Cash / Yield / Weath metrics -->
-                            <div class="columns">
-                                <div class="column">
-                                    <h6 class="title is-6">Cash in</h6>
-                                    <ul>
-                                        {% for income in fmodel_data.incomes %}
-                                            <li>{{ income.income_name }}: {{ income.value }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                                <div class="column">
-                                    <h6 class="title is-6">Cash out</h6>
-                                    {% for expense in fmodel_data.expenses %}
-                                    <li>{{ expense.expense_name }}: {{ expense.value }}</li>
-                                {% endfor %}
-                                </div>
-                                <div class="column">
-                                    <h6 class="title is-6">Cash left</h6>
-                                    <p>Amount</p>
-                                </div>
-                                <div class="column">
-                                    <h6 class="title is-6">Assets</h6>
-                                    <ul>
-                                        {% for asset in fmodel_data.assets %}
-                                            <li>{{ asset.asset_name }}: Yield Rate {{ asset.yield_rate }}, Principal Amount: {{ asset.principal_amount }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Row 3: Chart placeholder -->
-                            <div class="has-background-danger p-4">
-                                <p class="has-text-white">This is a new section with a red background.</p>
-                                <div class="" id="chartContainer"></div>
-                            </div>
-
-                        </div>
-                    </div>
-                    </div>
-                    </div>
-                </div>
-            {% endfor %}
+        <div class="columns is-multiline" id="fmodel-container">
+            <!-- The financial model cards will be generated here using JavaScript -->
         </div>
-
     <section>
 
     <section class="section">
-        <div>
+        <div>  <!-- Add new model -->
             <h2 class="title">Create a New Financial Model</h2>
             <form id="createFModelForm">
                 <input type="hidden" name="user_id" value="{{ user.id }}">
@@ -107,7 +36,7 @@
             </form>
         </div>
 
-        <div>
+        <div> <!-- Add income -->
             <h2 class="title">Add Income</h2>
             <form id="createIncomeForm">
                 <input type="hidden" name="user_id" value="{{ user.id }}">
@@ -121,7 +50,7 @@
             </form>
         </div>
 
-        <div>
+        <div> <!-- Add expense -->
             <h2 class="title">Add Expenses</h2>
             <form id="createExpenseForm">
                 {% csrf_token %}
@@ -143,7 +72,7 @@
             </form>
         </div>
 
-        <div>
+        <div>  <!-- Add asset -->
             <h2 class="title">Add Assets</h2>
             <form id="createAssetForm" method="post" action="{% url 'create_assets' %}">
                 {% csrf_token %}
@@ -166,210 +95,112 @@
                 <button type="button" onclick="submitAssetForm()">Submit Assets</button>
             </form>
         </div>
-    </div>
-<section>
+    </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
+<script src="{% static 'personalfinance/salary-calc-script.js' %}"></script>
+<script src="{% static 'personalfinance/form-handling.js' %}"></script>
+<script>    
+    document.addEventListener('DOMContentLoaded', function() {
+        const fmodelsData = JSON.parse('{{ fmodels_data | escapejs }}');
+        const fmodelContainer = document.getElementById('fmodel-container');
 
+        for (const fmodelId in fmodelsData) {
+            const fmodel = fmodelsData[fmodelId];
 
-<script>
-    function submitFModelForm() {
-        var form = document.getElementById('createFModelForm');
-        var formData = new FormData(form);
+            const GrosstotalIncome = fmodel.incomes.reduce((sum, income) => sum + parseFloat(income.value), 0);
+            const totalIncome = calculateNetSalary (GrosstotalIncome);
+            const totalExpense = fmodel.expenses.reduce((sum, expense) => sum + parseFloat(expense.value), 0);
+            const remainder = totalIncome - totalExpense;
 
-        fetch("{% url 'create_fmodel' %}", {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-            } else {
-                closeModal('fmodelModal');
-                location.reload(); 
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
+            const canvasId = `cashInChart-${fmodelId}`; // Unique canvas ID
 
-    function submitIncomeForm() {
-        var form = document.getElementById('createIncomeForm');
-        var formData = new FormData(form);
+            const card = document.createElement('div');
+            card.classList.add('column', 'is-full');
+            const cardContent = `
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">${fmodel.model_info.model_name}</p>
+                        <div class="card-header-icon">
+                            <!-- Card header buttons -->
+                        </div>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <!-- Row 1: Created on -->
+                            <div class="mb-4">
+                                <p>Created on: ${fmodel.model_info.date_created}</p>
+                            </div>
 
-        fetch("{% url 'create_income' %}", {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-            } else {
-                closeModal('incomeModal');
-                location.reload(); 
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
+                            <!-- Row 2: Cash / Yield / Wealth metrics -->
+                            <div class="columns">
+                                <div class="column">
+                                    <h6 class="title is-6">Cash in</h6>
+                                    <ul>
+                                        ${fmodel.incomes.map(income => `
+                                            <li>${income.income_name}: ${income.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
+                                        `).join('')}
+                                        <li>Total After Tax: £${totalIncome.toLocaleString(undefined, {maximumFractionDigits: 0 })}
+                                    </ul>
+                                </div>
+                                <div class="column">
+                                    <h6 class="title is-6">Cash out</h6>
+                                    <ul>
+                                        ${fmodel.expenses.map(expense => `
+                                            <li>${expense.expense_name}: ${expense.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                                <div class="column">
+                                    <h6 class="title is-6">Cash left</h6>
+                                    <p>${remainder.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                </div>
+                                <div class="column">
+                                    <h6 class="title is-6">Assets</h6>
+                                    <ul>
+                                        ${fmodel.assets.map(asset => `
+                                            <li>${asset.asset_name}: Yield Rate ${asset.yield_rate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, Principal Amount: ${asset.principle_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            </div>
 
-    let expenseCount = 1;
+                            <!-- Row 3: Chart placeholder -->
+                            <div class="column">
+                                <canvas id="${canvasId}"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            card.innerHTML = cardContent;
+            fmodelContainer.appendChild(card);
 
-    function addExpenseEntry() {
-        const expensesContainer = document.getElementById('expensesContainer');
-        const newEntry = document.createElement('div');
-        newEntry.className = 'expense-entry';
-        newEntry.innerHTML = `
-            <label for="expense_name_${expenseCount}">Expense Name:</label>
-            <input type="text" id="expense_name_${expenseCount}" name="expense_name" required>
-            <label for="expense_value_${expenseCount}">Amount:</label>
-            <input type="number" step="0.01" id="expense_value_${expenseCount}" name="value" required>
-        `;
-        expensesContainer.appendChild(newEntry);
-        expenseCount++;
-    }
-
-    function submitExpenseForm() {
-        const form = document.getElementById('createExpenseForm');
-        const formData = new FormData(form);
-        const expensesContainer = document.getElementById('expensesContainer');
-        const expenseEntries = expensesContainer.getElementsByClassName('expense-entry');
-
-        const expenses = [];
-        for (let i = 0; i < expenseEntries.length; i++) {
-            const expenseName = expenseEntries[i].querySelector(`[id^='expense_name_']`).value;
-            const expenseValue = expenseEntries[i].querySelector(`[id^='expense_value_']`).value;
-            expenses.push({
-                expense_name: expenseName,
-                value: expenseValue
+            // Initialize the chart
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Cash in', 'Cash out', 'Cash left'],
+                    datasets: [{
+                        label: fmodel.model_info.model_name,
+                        data: [totalIncome, totalExpense, remainder],
+                        backgroundColor: ['#4caf50', '#f44336', '#2196f3'],
+                        borderColor: ['#388e3c', '#d32f2f', '#1976d2'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
             });
         }
-
-        const data = {
-            user_id: formData.get('user_id'),
-            fmodel_name: formData.get('fmodel_name'),
-            expenses: expenses
-        };
-
-        const csrftoken = formData.get('csrfmiddlewaretoken');
-
-        fetch('{% url "create_expense" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Response:', data); // Log the response to the console
-            if (data.error) {
-                alert(data.error);
-            } else {
-                alert('Expenses created successfully');
-                // Optionally, update the UI with the new expense data
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    let assetCount = 1;
-
-        function addAssetEntry() {
-            const assetsContainer = document.getElementById('assetsContainer');
-            const newEntry = document.createElement('div');
-            newEntry.className = 'asset-entry';
-            newEntry.innerHTML = `
-                <label for="asset_name_${assetCount}">Asset Name:</label>
-                <input type="text" id="asset_name_${assetCount}" name="asset_name" required>
-                <label for="yield_rate_${assetCount}">Yield Rate:</label>
-                <input type="number" step="0.01" id="yield_rate_${assetCount}" name="yield_rate" required>
-                <label for="principle_amount_${assetCount}">Principle Amount:</label>
-                <input type="number" step="0.01" id="principle_amount_${assetCount}" name="principle_amount" required>
-            `;
-            assetsContainer.appendChild(newEntry);
-            assetCount++;
-        }
-
-        function submitAssetForm() {
-            const form = document.getElementById('createAssetForm');
-            const formData = new FormData(form);
-            const assetsContainer = document.getElementById('assetsContainer');
-            const assetEntries = assetsContainer.getElementsByClassName('asset-entry');
-
-            const assets = [];
-            for (let i = 0; i < assetEntries.length; i++) {
-                const assetName = assetEntries[i].querySelector(`[id^='asset_name_']`).value;
-                const yieldRate = assetEntries[i].querySelector(`[id^='yield_rate_']`).value;
-                const principleAmount = assetEntries[i].querySelector(`[id^='principle_amount_']`).value;
-                assets.push({
-                    asset_name: assetName,
-                    yield_rate: yieldRate,
-                    principle_amount: principleAmount
-                });
-            }
-
-            const data = {
-                user_id: formData.get('user_id'),
-                fmodel_name: formData.get('fmodel_name'),
-                assets: assets
-            };
-
-            const csrftoken = formData.get('csrfmiddlewaretoken');
-
-            fetch('{% url "create_assets" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Response:', data); // Log the response to the console
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    alert('Assets created successfully');
-                    // Optionally, update the UI with the new asset data
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        function submitEditFmodelForm() {
-            const form = document.getElementById('editFmodelForm');
-            const formData = new FormData(form);
-            const new_name = formData.get('fmodel_name');
-            const csrftoken = formData.get('csrfmiddlewaretoken');
-
-            fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify({ new_name: new_name })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Response:', data);
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    alert('FModel name updated successfully');
-                    // Optionally, update the UI with the new FModel name
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-        
+    });
 </script>
-
 {% endblock %}

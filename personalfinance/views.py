@@ -3,8 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from personalfinance.models import Userprofile, FModel, Income, Expense, Asset, ProfilePage
-import logging, json
-
+import logging
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
@@ -12,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, LoginForm
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
+import simplejson as json
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,23 +22,32 @@ def index(request):
     fmodels = FModel.objects.filter(user=user).prefetch_related('income_set', 'expense_set', 'asset_set')
     fmodel_count = fmodels.count()
 
-    fmodels_with_income_expense_and_assets = []
+    data = {}
     for fmodel in fmodels:
-        incomes = Income.objects.filter(fmodel=fmodel)
-        expenses = Expense.objects.filter(fmodel=fmodel)
-        assets = Asset.objects.filter(fmodel=fmodel)
-        fmodels_with_income_expense_and_assets.append({
-            'fmodel': fmodel,
-            'incomes': incomes,
-            'expenses': expenses,
-            'assets': assets,
-            'created': fmodel.created
-        })
+        incomes = fmodel.income_set.all()
+        expenses = fmodel.expense_set.all()
+        assets = fmodel.asset_set.all()
+
+        model_data = {
+            'model_info': {
+                'model_id': fmodel.id,
+                'model_name': fmodel.fmodel_name,
+                'date_created': fmodel.created.strftime('%Y-%m-%d %H:%M:%S')
+            },
+            'incomes': list(incomes.values()),
+            'expenses': list(expenses.values()),
+            'assets': list(assets.values())
+        }
+
+        data[fmodel.id] = model_data
+
+    json_data = json.dumps(data)
 
     context = {
         'user': user,
         'fmodel_count': fmodel_count,
-        'fmodels_with_income_expense_and_assets': fmodels_with_income_expense_and_assets    }
+        'fmodels_data': json_data
+    }
 
     return render(request, 'personalfinance/index.html', context)
 
