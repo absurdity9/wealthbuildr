@@ -44,18 +44,17 @@ function calculateNetSalary(annualGrossSalary) {
     return netAnnualSalary;
   }
 
-  function calculateROI(initialAmount, yieldRate, duration) {
-    let accumulatedAmount = initialAmount;
-    let yearlyAmounts = [initialAmount]; // Initialize the array with the initial amount
-    const adjustedYieldRate = yieldRate / 100; 
+function calculateROI(initialAmount, yieldRate, duration) {
+  let accumulatedAmount = initialAmount * (1 + yieldRate / 100); 
+  let yearlyAmounts = [accumulatedAmount];
 
-    for (let year = 1; year <= duration; year++) {
-      accumulatedAmount += accumulatedAmount * adjustedYieldRate;
+  for (let year = 1; year < duration; year++) {
+      accumulatedAmount = (accumulatedAmount + initialAmount) * (1 + yieldRate / 100);
       yearlyAmounts.push(accumulatedAmount);
-    }
-  
-    return {
+  }
+
+  return {
       total: accumulatedAmount,
       yearlyAmounts: yearlyAmounts
-    };
-  }
+  };
+}
