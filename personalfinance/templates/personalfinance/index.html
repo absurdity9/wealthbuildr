@@ -157,13 +157,17 @@
                                 </div>
                                 <div class="column">
                                     <h6 class="title is-6">Cash left</h6>
-                                    <p>${remainder.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                    <ul><li>${remainder.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</ul>
                                 </div>
                                 <div class="column">
                                     <h6 class="title is-6">Assets</h6>
                                     <ul>
                                         ${fmodel.assets.map(asset => `
-                                            <li>${asset.asset_name}: Yield Rate ${asset.yield_rate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, Principal Amount: ${asset.principle_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
+                                            <li>${asset.asset_name}
+                                            <ul>
+                                                <li> Yield Rate ${asset.yield_rate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                <li>Principal Amount: ${asset.principle_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
+                                            </ul>
                                         `).join('')}
                                         <li><p id="total-after-5-years-${fmodelId}" class="mt-4"></p>
                                     </ul>
