@@ -111,11 +111,12 @@
             const fmodel = fmodelsData[fmodelId];
 
             const GrosstotalIncome = fmodel.incomes.reduce((sum, income) => sum + parseFloat(income.value), 0);
-            const totalIncome = calculateNetSalary (GrosstotalIncome);
+            const totalIncome = calculateNetSalary(GrosstotalIncome);
             const totalExpense = fmodel.expenses.reduce((sum, expense) => sum + parseFloat(expense.value), 0);
             const remainder = totalIncome - totalExpense;
 
-            const canvasId = `cashInChart-${fmodelId}`; // Unique canvas ID
+            const cashflowCanvasId = `cashInChart-${fmodelId}`; // Unique canvas ID for cashflow chart
+            const assetCanvasId = `assetChart-${fmodelId}`; // Unique canvas ID for asset chart
 
             const card = document.createElement('div');
             card.classList.add('column', 'is-full');
@@ -167,9 +168,14 @@
                                 </div>
                             </div>
 
-                            <!-- Row 3: Chart placeholder -->
-                            <div class="column">
-                                <canvas id="${canvasId}"></canvas>
+                            <!-- Row 3: Charts -->
+                            <div class="columns">
+                                <div class="column is-half">
+                                    <canvas id="${cashflowCanvasId}"></canvas>
+                                </div>
+                                <div class="column is-half">
+                                    <canvas id="${assetCanvasId}"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -178,14 +184,14 @@
             card.innerHTML = cardContent;
             fmodelContainer.appendChild(card);
 
-            // Initialize the chart
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            new Chart(ctx, {
+            // Cashflow chart
+            const ctxCashflow = document.getElementById(cashflowCanvasId).getContext('2d');
+            new Chart(ctxCashflow, {
                 type: 'bar',
                 data: {
                     labels: ['Cash in', 'Cash out', 'Cash left'],
                     datasets: [{
-                        label: fmodel.model_info.model_name,
+                        label: 'Cashflow',
                         data: [totalIncome, totalExpense, remainder],
                         backgroundColor: ['#4caf50', '#f44336', '#2196f3'],
                         borderColor: ['#388e3c', '#d32f2f', '#1976d2'],
@@ -193,6 +199,33 @@
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Asset chart
+            const ctxAsset = document.getElementById(assetCanvasId).getContext('2d');
+            new Chart(ctxAsset, {
+                type: 'bar',
+                data: {
+                    labels: fmodel.assets.map(asset => asset.asset_name),
+                    datasets: [{
+                        label: 'Asset Principal Amounts',
+                        data: fmodel.assets.map(asset => asset.principle_amount),
+                        backgroundColor: '#ffa726',
+                        borderColor: '#fb8c00',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true
