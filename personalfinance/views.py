@@ -51,6 +51,29 @@ def index(request):
 
     return render(request, 'personalfinance/index.html', context)
 
+def add(request):
+    return render(request, 'personalfinance/add.html')
+
+def get_fmodel_data(request, fmodel_id):
+    fmodel = get_object_or_404(FModel, id=fmodel_id)
+    
+    incomes = fmodel.income_set.all()
+    expenses = fmodel.expense_set.all()
+    assets = fmodel.asset_set.all()
+    
+    model_data = {
+        'model_info': {
+            'model_id': fmodel.id,
+            'model_name': fmodel.fmodel_name,
+            'date_created': fmodel.created.strftime('%Y-%m-%d %H:%M:%S')
+        },
+        'incomes': list(incomes.values()),
+        'expenses': list(expenses.values()),
+        'assets': list(assets.values())
+    }
+    
+    return JsonResponse(model_data)
+
 def create_user_profile(request):
 
     if request.method == 'POST':

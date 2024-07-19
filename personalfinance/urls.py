@@ -17,4 +17,6 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', LogoutView.as_view(next_page='index'), name='logout'), 
     path('edit_fmodel_name/<int:fmodel_id>/', views.edit_fmodel_name, name='edit_fmodel_name'),
+    path('add/', views.add, name='add'),
+    path('get_fmodel_data/<int:fmodel_id>/', views.get_fmodel_data, name='get_fmodel_data'),
 ] 

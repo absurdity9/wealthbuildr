@@ -1,0 +1,109 @@
+{% extends 'nav.html' %}
+{% load static %}
+
+{% block title %}Edit Financial Model{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="title">Edit FModel</h1>
+        <form id="edit-form">
+            <div class="field">
+                <label class="label">FModel Name</label>
+                <div class="control">
+                    <input class="input" type="text" id="fmodel-name" placeholder="FModel Name">
+                </div>
+            </div>
+
+            <h2 class="subtitle">Incomes</h2>
+            <div id="incomes-container"></div>
+
+            <h2 class="subtitle">Expenses</h2>
+            <div id="expenses-container"></div>
+
+            <h2 class="subtitle">Assets</h2>
+            <div id="assets-container"></div>
+
+            <div class="field is-grouped mt-5">
+                <div class="control">
+                    <button class="button is-link" type="button" onclick="history.back()">Back</button>
+                </div>
+                <div class="control">
+                    <button class="button is-primary" type="submit">Save Edits</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fmodelsData = JSON.parse('{{ fmodel_data | escapejs }}');
+        const data = fmodelsData;
+        
+        document.getElementById('fmodel-name').value = data.fmodel_name;
+
+        var incomesContainer = document.getElementById('incomes-container');
+        data.incomes.forEach(function(income, index) {
+            incomesContainer.innerHTML += `
+                <div class="field">
+                    <label class="label">Income Name ${index + 1}</label>
+                    <div class="control">
+                        <input class="input" type="text" name="income_name_${income.id}" value="${income.income_name}" placeholder="Income Name">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Income Value ${index + 1}</label>
+                    <div class="control">
+                        <input class="input" type="number" name="income_value_${income.id}" value="${income.value}" placeholder="Income Value">
+                    </div>
+                </div>
+            `;
+        });
+
+        var expensesContainer = document.getElementById('expenses-container');
+        data.expenses.forEach(function(expense, index) {
+            expensesContainer.innerHTML += `
+                <div class="field">
+                    <label class="label">Expense Name ${index + 1}</label>
+                    <div class="control">
+                        <input class="input" type="text" name="expense_name_${expense.id}" value="${expense.expense_name}" placeholder="Expense Name">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Expense Value ${index + 1}</label>
+                    <div class="control">
+                        <input class="input" type="number" name="expense_value_${expense.id}" value="${expense.value}" placeholder="Expense Value">
+                    </div>
+                </div>
+            `;
+        });
+
+        var assetsContainer = document.getElementById('assets-container');
+        data.assets.forEach(function(asset, index) {
+            assetsContainer.innerHTML += `
+                <div class="field">
+                    <label class="label">Asset Name ${index + 1}</label>
+                    <div class="control">
+                        <input class="input" type="text" name="asset_name_${asset.id}" value="${asset.asset_name}" placeholder="Asset Name">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Yield Rate ${index + 1}</label>
+                    <div class="control">
+                        <input class="input" type="number" name="yield_rate_${asset.id}" value="${asset.yield_rate}" placeholder="Yield Rate">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Principle Amount ${index + 1}</label>
+                    <div class="control">
+                        <input class="input" type="number" name="principle_amount_${asset.id}" value="${asset.principle_amount}" placeholder="Principle Amount">
+                    </div>
+                </div>
+            `;
+        });
+    });
+</script>
+{% endblock %}

@@ -12,7 +12,9 @@
             </div>
 
             <div class="column is-narrow">
-                <button class="button is-primary">Add Model</button>
+                <a href="{% url 'add' %}">
+                    <button class="button is-primary">Add Model</button>
+                </a>
             </div>
         </div>
 
@@ -26,12 +28,47 @@
     <section>
 
 </div>
+
+<div id="editModal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Edit Fmodel</p>
+            <button class="delete" aria-label="close" onclick="closeModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <form id="editFmodelForm">
+                <div class="field">
+                    <label class="label">Model Name</label>
+                    <div class="control">
+                        <input class="input" type="text" id="model_name" name="model_name">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Date Created</label>
+                    <div class="control">
+                        <input class="input" type="text" id="date_created" name="date_created">
+                    </div>
+                </div>
+                <div id="incomesContainer"></div>
+                <div id="expensesContainer"></div>
+                <div id="assetsContainer"></div>
+            </form>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-success" onclick="saveEdits()">Save changes</button>
+            <button class="button" onclick="closeModal()">Cancel</button>
+        </footer>
+    </div>
+</div>
+
 {% endblock %}
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
 <script src="{% static 'personalfinance/calculations-script.js' %}"></script>
 <script>    
     document.addEventListener('DOMContentLoaded', function() {
+
         const fmodelsData = JSON.parse('{{ fmodels_data | escapejs }}');
         const fmodelContainer = document.getElementById('fmodel-container');
     
@@ -54,9 +91,7 @@
                 <div class="card">
                     <header class="card-header">
                         <p class="card-header-title">${fmodel.model_info.model_name}</p>
-                        <div class="card-header-icon">
-                            <!-- Card header buttons -->
-                        </div>
+                        <button class="button is-info is-small" onclick="showEditModal(${fmodelId})">Edit</button>
                     </header>
                     <div class="card-content">
                         <div class="content">
@@ -102,10 +137,10 @@
                             <!-- Row 3: Charts -->
                             <div class="columns">
                                 <div class="column is-half">
-                                    <canvas id="${cashflowCanvasId}"></canvas>
+                                    <canvas style="min-height: 320px;" id="${cashflowCanvasId}"></canvas>
                                 </div>
                                 <div class="column is-half">
-                                    <canvas id="${assetCanvasId}"></canvas>
+                                    <canvas style="min-height: 320px;" id="${assetCanvasId}"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -134,6 +169,21 @@
                     scales: {
                         y: {
                             beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false 
+                        },
+                        title: {
+                            display: true,
+                            text: 'Monthly Cashflows',
+                            font: {
+                                size: 16
+                            },
+                            padding: {
+                                top: 10,
+                            }
                         }
                     }
                 }
@@ -167,11 +217,94 @@
                         y: {
                             beginAtZero: true
                         }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Annual Wealth Accumulation',
+                            font: {
+                                size: 16
+                            },
+                            padding: {
+                                top: 10,
+                            }
+                        }
                     }
                 }
             });
         }
-    });
+        
+        window.showEditModal = function(fmodelId) {
+            fetch(`/get_fmodel_data/${fmodelId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    document.getElementById('model_name').value = data.model_info.model_name;
+                    document.getElementById('date_created').value = data.model_info.date_created;
+
+                    const incomesContainer = document.getElementById('incomesContainer');
+                    incomesContainer.innerHTML = '';
+                    data.incomes.forEach((income, index) => {
+                        incomesContainer.innerHTML += `
+                            <div class="field">
+                                <label class="label">Income ${index + 1}</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="income_name_${index}" value="${income.income_name}">
+                                </div>
+                                <div class="control">
+                                    <input class="input" type="text" name="income_value_${index}" value="${income.value}">
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    const expensesContainer = document.getElementById('expensesContainer');
+                    expensesContainer.innerHTML = '';
+                    data.expenses.forEach((expense, index) => {
+                        expensesContainer.innerHTML += `
+                            <div class="field">
+                                <label class="label">Expense ${index + 1}</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="expense_name_${index}" value="${expense.expense_name}">
+                                </div>
+                                <div class="control">
+                                    <input class="input" type="text" name="expense_value_${index}" value="${expense.value}">
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    const assetsContainer = document.getElementById('assetsContainer');
+                    assetsContainer.innerHTML = '';
+                    data.assets.forEach((asset, index) => {
+                        assetsContainer.innerHTML += `
+                            <div class="field">
+                                <label class="label">Asset ${index + 1}</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="asset_name_${index}" value="${asset.asset_name}">
+                                </div>
+                                <div class="control">
+                                    <input class="input" type="text" name="yield_rate_${index}" value="${asset.yield_rate}">
+                                </div>
+                                <div class="control">
+                                    <input class="input" type="text" name="principle_amount_${index}" value="${asset.principle_amount}">
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    // Show the modal
+                    document.getElementById('editModal').classList.add('is-active');
+                })
+                .catch(error => console.error('Error:', error));
+        };
+
+        // Hide the edit modal
+        window.closeModal = function() {
+            document.getElementById('editModal').classList.remove('is-active');
+        };
+        
+});
     
     
 </script>
