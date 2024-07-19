@@ -5,76 +5,130 @@
 
 {% block content %}
 <section class="section">
-    <div>  <!-- Add new model -->
-        <h2 class="title">Create a New Financial Model</h2>
-        <form id="createFModelForm">
-            <input type="hidden" name="user_id" value="{{ user.id }}">
-            <label for="fmodel_name">Name:</label>
-            <input type="text" id="fmodel_name" name="fmodel_name" required>
-            <button type="button" onclick="submitFModelForm()">Create</button>
-        </form>
-    </div>
+    <div class="container">
+        <div class="column is-full">
+            <div class="card">
+                <div class="card-content">
+                    <h2 class="title">Create a New Financial Model</h2>
+                    <form id="createFModelForm">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <div class="field">
+                            <label for="fmodel_name" class="label">Name:</label>
+                            <div class="control">
+                                <input type="text" id="fmodel_name" name="fmodel_name" class="input" required>
+                            </div>
+                        </div>
+                        <button type="button" onclick="submitFModelForm()" class="button is-primary">Create Financial Model</button>
+                    </form>
+                </div>
+            </div>
 
-    <div> <!-- Add income -->
-        <h2 class="title">Add Income</h2>
-        <form id="createIncomeForm">
-            <input type="hidden" name="user_id" value="{{ user.id }}">
-            <label for="fmodel_name">Financial Model Name:</label>
-            <input type="text" id="fmodel_name" name="fmodel_name" required>
-            <label for="income_name">Income Name:</label>
-            <input type="text" id="income_name" name="income_name" required>
-            <label for="value">Value:</label>
-            <input type="number" step="0.01" id="value" name="value" required>
-            <button type="button" onclick="submitIncomeForm()">Add Income</button>
-        </form>
-    </div>
-
-    <div> <!-- Add expense -->
-        <h2 class="title">Add Expenses</h2>
-        <form id="createExpenseForm">
-            {% csrf_token %}
-            <input type="hidden" name="user_id" value="{{ user.id }}">
-            <label for="fmodel_name_expense">Financial Model Name:</label>
-            <input type="text" id="fmodel_name_expense" name="fmodel_name" required>
-            
-            <div id="expensesContainer">
-                <div class="expense-entry">
-                    <label for="expense_name_0">Expense Name:</label>
-                    <input type="text" id="expense_name_0" name="expense_name" required>
-                    <label for="expense_value_0">Amount:</label>
-                    <input type="number" step="0.01" id="expense_value_0" name="value" required>
+            <div class="card"> <!-- Add income -->
+                <div class="card-content">
+                    <h2 class="title">Add Income</h2>
+                    <form id="createIncomeForm">
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <div class="field">
+                            <label for="fmodel_name" class="label">Financial Model Name:</label>
+                            <div class="control">
+                                <input type="text" id="fmodel_name" name="fmodel_name" class="input" required>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="income_name" class="label">Income Name:</label>
+                            <div class="control">
+                                <input type="text" id="income_name" name="income_name" class="input" required>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="value" class="label">Value:</label>
+                            <div class="control">
+                                <input type="number" step="0.01" id="value" name="value" class="input" required>
+                            </div>
+                        </div>
+                        <button type="button" onclick="submitIncomeForm()" class="button is-primary">Submit Income</button>
+                    </form>
                 </div>
             </div>
             
-            <button type="button" onclick="addExpenseEntry()">Add Expense</button>
-            <button type="button" onclick="submitExpenseForm()">Submit Expenses</button>
-        </form>
-    </div>
-
-    <div>  <!-- Add asset -->
-        <h2 class="title">Add Assets</h2>
-        <form id="createAssetForm" method="post" action="{% url 'create_assets' %}">
-            {% csrf_token %}
-            <input type="hidden" name="user_id" value="{{ user.id }}">
-            <label for="fmodel_name_asset">Financial Model Name:</label>
-            <input type="text" id="fmodel_name_asset" name="fmodel_name" required>
-            
-            <div id="assetsContainer">
-                <div class="asset-entry">
-                    <label for="asset_name_0">Asset Name:</label>
-                    <input type="text" id="asset_name_0" name="asset_name" required>
-                    <label for="yield_rate_0">Yield Rate:</label>
-                    <input type="number" step="0.01" id="yield_rate_0" name="yield_rate" required>
-                    <label for="principle_amount_0">Principal Amount:</label>
-                    <input type="number" step="0.01" id="principle_amount_0" name="principle_amount" required>
+            <div class="card"> <!-- Add expense -->
+                <div class="card-content">
+                    <h2 class="title">Add Expenses</h2>
+                    <form id="createExpenseForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <div class="field">
+                            <label for="fmodel_name_expense" class="label">Financial Model Name:</label>
+                            <div class="control">
+                                <input type="text" id="fmodel_name_expense" name="fmodel_name" class="input" required>
+                            </div>
+                        </div>
+                        <div id="expensesContainer">
+                            <div class="expense-entry box">
+                                <div class="field">
+                                    <label for="expense_name_0" class="label">Expense Name:</label>
+                                    <div class="control">
+                                        <input type="text" id="expense_name_0" name="expense_name" class="input" required>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="expense_value_0" class="label">Amount:</label>
+                                    <div class="control">
+                                        <input type="number" step="0.01" id="expense_value_0" name="value" class="input" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addExpenseEntry()" class="button is-info">Add Expense</button>
+                        <button type="button" onclick="submitExpenseForm()" class="button is-primary">Submit Expenses</button>
+                    </form>
                 </div>
             </div>
             
-            <button type="button" onclick="addAssetEntry()">Add Asset</button>
-            <button type="button" onclick="submitAssetForm()">Submit Assets</button>
-        </form>
+            <div class="card"> <!-- Add asset -->
+                <div class="card-content">
+                    <h2 class="title">Add Assets</h2>
+                    <form id="createAssetForm" method="post" action="{% url 'create_assets' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                        <div class="field">
+                            <label for="fmodel_name_asset" class="label">Financial Model Name:</label>
+                            <div class="control">
+                                <input type="text" id="fmodel_name_asset" name="fmodel_name" class="input" required>
+                            </div>
+                        </div>
+                        <div id="assetsContainer">
+                            <div class="asset-entry box">
+                                <div class="field">
+                                    <label for="asset_name_0" class="label">Asset Name:</label>
+                                    <div class="control">
+                                        <input type="text" id="asset_name_0" name="asset_name" class="input" required>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="yield_rate_0" class="label">Yield Rate:</label>
+                                    <div class="control">
+                                        <input type="number" step="0.01" id="yield_rate_0" name="yield_rate" class="input" required>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="principle_amount_0" class="label">Principal Amount:</label>
+                                    <div class="control">
+                                        <input type="number" step="0.01" id="principle_amount_0" name="principle_amount" class="input" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addAssetEntry()" class="button is-info">Add Asset</button>
+                        <button type="button" onclick="submitAssetForm()" class="button is-primary">Submit Assets</button>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
     </div>
 </section>
+
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'personalfinance/form-handling.js' %}"></script>
