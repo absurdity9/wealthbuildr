@@ -12,7 +12,7 @@ from .forms import RegisterForm, LoginForm
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 import simplejson as json
-
+from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +52,7 @@ def index(request):
     return render(request, 'personalfinance/index.html', context)
 
 def add(request):
+    print(request.user)
     return render(request, 'personalfinance/add.html')
 
 def get_fmodel_data(request, fmodel_id):
@@ -342,21 +343,54 @@ def login_view(request):
 def logout_view(request):
     logout(request)
 
-def edit_fmodel_name(request, fmodel_id):
+@csrf_exempt    
+def edit_fmodel(request, fmodel_id):
     if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            new_name = data.get('new_name')
-            if not new_name:
-                return JsonResponse({'error': 'New name is required'}, status=400)
+        # Get the JSON data from the request body
+        data = json.loads(request.body)
 
-            fmodel = get_object_or_404(FModel, id=fmodel_id)
-            fmodel.fmodel_name = new_name
+        # Get the financial model object
+        fmodel = FinancialModel.objects.get(id=fmodel_id)
+
+        # Update the model name if it has been changed
+        if 'model_name' in data:
+            fmodel.model_name = data['model_name']
             fmodel.save()
 
-            return JsonResponse({'message': 'FModel name updated successfully'}, status=200)
-        except Exception as e:
-            logger.error(f"Error updating FModel: {e}")
-            return JsonResponse({'error': 'Internal server error'}, status=500)
+        # Update the income data if it has been changed
+        if 'incomes' in data:
+            for i, income_data in enumerate(data['incomes']):
+                income = fmodel.incomes.all()[i]
+                if 'income_name' in income_data:
+                    income.income_name = income_data['income_name']
+                if 'value' in income_data:
+                    income.value = income_data['value']
+                income.save()
+
+        # Update the expense data if it has been changed
+        if 'expenses' in data:
+            for i, expense_data in enumerate(data['expenses']):
+                expense = fmodel.expenses.all()[i]
+                if 'expense_name' in expense_data:
+                    expense.expense_name = expense_data['expense_name']
+                if 'value' in expense_data:
+                    expense.value = expense_data['value']
+                expense.save()
+
+        # Update the asset data if it has been changed
+        if 'assets' in data:
+            for i, asset_data in enumerate(data['assets']):
+                asset = fmodel.assets.all()[i]
+                if 'asset_name' in asset_data:
+                    asset.asset_name = asset_data['asset_name']
+                if 'yield_rate' in asset_data:
+                    asset.yield_rate = asset_data['yield_rate']
+                if 'principle_amount' in asset_data:
+                    asset.principle_amount = asset_data['principle_amount']
+                asset.save()
+
+        # Return a JSON response indicating success
+        return JsonResponse({'success': True})
     else:
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
+        # Return a JSON response indicating error
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})

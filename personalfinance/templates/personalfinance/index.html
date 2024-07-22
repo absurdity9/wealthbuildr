@@ -29,7 +29,7 @@
 
 </div>
 
-<div id="editModal" class="modal">
+<div id="editModal" class="modal"> <!-- Edit Modal -->
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
@@ -42,12 +42,6 @@
                     <label class="label">Model Name</label>
                     <div class="control">
                         <input class="input" type="text" id="model_name" name="model_name">
-                    </div>
-                </div>
-                <div class="field">
-                    <label class="label">Date Created</label>
-                    <div class="control">
-                        <input class="input" type="text" id="date_created" name="date_created">
                     </div>
                 </div>
                 <div id="incomesContainer"></div>
@@ -66,6 +60,8 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
 <script src="{% static 'personalfinance/calculations-script.js' %}"></script>
+<script src="{% static 'personalfinance/modals.js' %}"></script>
+
 <script>    
     document.addEventListener('DOMContentLoaded', function() {
 
@@ -85,6 +81,8 @@
             const cashflowCanvasId = `cashInChart-${fmodelId}`; // Unique canvas ID for cashflow chart
             const assetCanvasId = `assetChart-${fmodelId}`; // Unique canvas ID for asset chart
     
+            const formattedDate = formatDate(fmodel.model_info.date_created); 
+
             const card = document.createElement('div');
             card.classList.add('column', 'is-full');
             const cardContent = `
@@ -97,7 +95,7 @@
                         <div class="content">
                             <!-- Row 1: Created on -->
                             <div class="mb-4">
-                                <p>Created on: ${fmodel.model_info.date_created}</p>
+                                <p>Created on: ${formattedDate}</p>
                             </div>
     
                             <!-- Row 2: Cash / Yield / Wealth metrics -->
@@ -238,72 +236,104 @@
             fetch(`/get_fmodel_data/${fmodelId}/`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);
+                    localStorage.setItem('fmodelId', fmodelId);
+        
+                    // Populate basic fields
                     document.getElementById('model_name').value = data.model_info.model_name;
-                    document.getElementById('date_created').value = data.model_info.date_created;
-
+        
+                    // Handle incomes
                     const incomesContainer = document.getElementById('incomesContainer');
                     incomesContainer.innerHTML = '';
                     data.incomes.forEach((income, index) => {
                         incomesContainer.innerHTML += `
-                            <div class="field">
-                                <label class="label">Income ${index + 1}</label>
-                                <div class="control">
-                                    <input class="input" type="text" name="income_name_${index}" value="${income.income_name}">
+                        <div class="card mb-2 mt-3">
+                            <header class="card-header">
+                                <p class="card-header-title">Income ${index + 1}</p>
+                            </header>
+                            <div class="card-content">
+                                <div class="field ">
+                                    <label class="label">Name</label>
+                                    <div class="control">
+                                        <input class="input" type="text" name="income_name_${index}" value="${income.income_name}">
+                                    </div>
                                 </div>
-                                <div class="control">
-                                    <input class="input" type="text" name="income_value_${index}" value="${income.value}">
+                                <div class="field">
+                                    <label class="label">Value</label>
+                                    <div class="control">
+                                        <input class="input" type="number" name="income_value_${index}" value="${income.value}">
+                                    </div>
                                 </div>
                             </div>
+                        </div>
                         `;
                     });
-
+        
+                    // Handle expenses
                     const expensesContainer = document.getElementById('expensesContainer');
                     expensesContainer.innerHTML = '';
                     data.expenses.forEach((expense, index) => {
                         expensesContainer.innerHTML += `
-                            <div class="field">
-                                <label class="label">Expense ${index + 1}</label>
-                                <div class="control">
-                                    <input class="input" type="text" name="expense_name_${index}" value="${expense.expense_name}">
+                        <div class="card">
+                            <header class="card-header">
+                                <p class="card-header-title">Expense ${index + 1}</p>
+                            </header>
+                            <div class="card-content">
+                                <div class="field">
+                                    <label class="label">Name</label>
+                                    <div class="control">
+                                        <input class="input" type="text" name="expense_name_${index}" value="${expense.expense_name}">
+                                    </div>
                                 </div>
-                                <div class="control">
-                                    <input class="input" type="text" name="expense_value_${index}" value="${expense.value}">
+                                <div class="field">
+                                    <label class="label">Value</label>
+                                    <div class="control">
+                                        <input class="input" type="number" name="expense_value_${index}" value="${expense.value}">
+                                    </div>
                                 </div>
                             </div>
+                        </div>
                         `;
                     });
-
+        
+                    // Handle assets
                     const assetsContainer = document.getElementById('assetsContainer');
                     assetsContainer.innerHTML = '';
                     data.assets.forEach((asset, index) => {
                         assetsContainer.innerHTML += `
-                            <div class="field">
-                                <label class="label">Asset ${index + 1}</label>
-                                <div class="control">
-                                    <input class="input" type="text" name="asset_name_${index}" value="${asset.asset_name}">
+                        <div class="card ">
+                            <header class="card-header">
+                                <p class="card-header-title">${asset.asset_name}</p>
+                            </header>
+                            <div class="card-content">
+                                <div class="field">
+                                    <label class="label">Yield Rate</label>
+                                    <div class="control">
+                                        <input class="input" type="number" name="yield_rate_${index}" value="${asset.yield_rate}">
+                                    </div>
                                 </div>
-                                <div class="control">
-                                    <input class="input" type="text" name="yield_rate_${index}" value="${asset.yield_rate}">
-                                </div>
-                                <div class="control">
-                                    <input class="input" type="text" name="principle_amount_${index}" value="${asset.principle_amount}">
+                                <div class="field">
+                                    <label class="label">Principle Amount</label>
+                                    <div class="control">
+                                        <input class="input" type="number" name="principle_amount_${index}" value="${asset.principle_amount}">
+                                    </div>
                                 </div>
                             </div>
+                        </div>
                         `;
                     });
-
+        
                     // Show the modal
                     document.getElementById('editModal').classList.add('is-active');
                 })
                 .catch(error => console.error('Error:', error));
         };
+        
+        
 
         // Hide the edit modal
         window.closeModal = function() {
             document.getElementById('editModal').classList.remove('is-active');
         };
-        
 });
     
     

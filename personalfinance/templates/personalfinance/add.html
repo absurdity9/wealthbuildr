@@ -9,8 +9,9 @@
         <div class="column is-full">
             <div class="card">
                 <div class="card-content">
-                    <h2 class="title">Create a New Financial Model</h2>
+                    <h2 class="title">Create a New Financial Model</h2> <!-- Add FModel -->
                     <form id="createFModelForm">
+                        {% csrf_token %}
                         <input type="hidden" name="user_id" value="{{ user.id }}">
                         <div class="field">
                             <label for="fmodel_name" class="label">Name:</label>
@@ -18,7 +19,11 @@
                                 <input type="text" id="fmodel_name" name="fmodel_name" class="input" required>
                             </div>
                         </div>
-                        <button type="button" onclick="submitFModelForm()" class="button is-primary">Create Financial Model</button>
+                        <div class="field is-grouped ">
+                            <div class="control">
+                                <button type="button" onclick="submitFModelForm()" class="button is-primary">Create Financial Model</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -27,6 +32,7 @@
                 <div class="card-content">
                     <h2 class="title">Add Income</h2>
                     <form id="createIncomeForm">
+                        {% csrf_token %}
                         <input type="hidden" name="user_id" value="{{ user.id }}">
                         <div class="field">
                             <label for="fmodel_name" class="label">Financial Model Name:</label>
@@ -41,12 +47,16 @@
                             </div>
                         </div>
                         <div class="field">
-                            <label for="value" class="label">Value:</label>
+                            <label for="value" class="label">Amount (£):</label>
                             <div class="control">
                                 <input type="number" step="0.01" id="value" name="value" class="input" required>
                             </div>
                         </div>
-                        <button type="button" onclick="submitIncomeForm()" class="button is-primary">Submit Income</button>
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <button type="button" onclick="submitIncomeForm()" class="button is-primary">Save Income</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -64,7 +74,7 @@
                             </div>
                         </div>
                         <div id="expensesContainer">
-                            <div class="expense-entry box">
+                            <div class="expense-entry block">
                                 <div class="field">
                                     <label for="expense_name_0" class="label">Expense Name:</label>
                                     <div class="control">
@@ -72,15 +82,19 @@
                                     </div>
                                 </div>
                                 <div class="field">
-                                    <label for="expense_value_0" class="label">Amount:</label>
+                                    <label for="expense_value_0" class="label">Amount (£):</label>
                                     <div class="control">
                                         <input type="number" step="0.01" id="expense_value_0" name="value" class="input" required>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <button type="button" onclick="addExpenseEntry()" class="button is-info">Add Expense</button>
-                        <button type="button" onclick="submitExpenseForm()" class="button is-primary">Submit Expenses</button>
+                        <div class="field is-grouped mt-3 mb-3">
+                            <div class="control">
+                                <button type="button" onclick="addExpenseEntry()" class="button is-info">Add Expense</button>
+                                <button type="button" onclick="submitExpenseForm()" class="button is-primary">Save Expenses</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -98,7 +112,7 @@
                             </div>
                         </div>
                         <div id="assetsContainer">
-                            <div class="asset-entry box">
+                            <div class="asset-entry block">
                                 <div class="field">
                                     <label for="asset_name_0" class="label">Asset Name:</label>
                                     <div class="control">
@@ -112,15 +126,19 @@
                                     </div>
                                 </div>
                                 <div class="field">
-                                    <label for="principle_amount_0" class="label">Principal Amount:</label>
+                                    <label for="principle_amount_0" class="label">Principal Amount (£):</label>
                                     <div class="control">
                                         <input type="number" step="0.01" id="principle_amount_0" name="principle_amount" class="input" required>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <button type="button" onclick="addAssetEntry()" class="button is-info">Add Asset</button>
-                        <button type="button" onclick="submitAssetForm()" class="button is-primary">Submit Assets</button>
+                        <div class="field is-grouped mt-3 mb-3">
+                            <div class="control">
+                                <button type="button" onclick="addAssetEntry()" class="button is-info">Add Asset</button>
+                                <button type="button" onclick="submitAssetForm()" class="button is-primary">Save Assets</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -132,4 +150,170 @@
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'personalfinance/form-handling.js' %}"></script>
+<script> // Form Submission 
+function submitFModelForm() {
+    var form = document.getElementById('createFModelForm');
+    var formData = new FormData(form);
+
+    fetch("{% url 'create_fmodel' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            closeModal('fmodelModal');
+            location.reload(); 
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function submitIncomeForm() {
+    var form = document.getElementById('createIncomeForm');
+    var formData = new FormData(form);
+
+    fetch("{% url 'create_income' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            closeModal('incomeModal');
+            location.reload(); 
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function submitExpenseForm() {
+    const form = document.getElementById('createExpenseForm');
+    const formData = new FormData(form);
+    const expensesContainer = document.getElementById('expensesContainer');
+    const expenseEntries = expensesContainer.getElementsByClassName('expense-entry');
+
+    const expenses = [];
+    for (let i = 0; i < expenseEntries.length; i++) {
+        const expenseName = expenseEntries[i].querySelector(`[id^='expense_name_']`).value;
+        const expenseValue = expenseEntries[i].querySelector(`[id^='expense_value_']`).value;
+        expenses.push({
+            expense_name: expenseName,
+            value: expenseValue
+        });
+    }
+
+    const data = {
+        user_id: formData.get('user_id'),
+        fmodel_name: formData.get('fmodel_name'),
+        expenses: expenses
+    };
+
+    const csrftoken = formData.get('csrfmiddlewaretoken');
+
+    fetch('{% url "create_expense" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response:', data); // Log the response to the console
+        if (data.error) {
+            alert(data.error);
+        } else {
+            alert('Expenses created successfully');
+            // Optionally, update the UI with the new expense data
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function submitAssetForm() {
+    const form = document.getElementById('createAssetForm');
+    const formData = new FormData(form);
+    const assetsContainer = document.getElementById('assetsContainer');
+    const assetEntries = assetsContainer.getElementsByClassName('asset-entry');
+
+    const assets = [];
+    for (let i = 0; i < assetEntries.length; i++) {
+        const assetName = assetEntries[i].querySelector(`[id^='asset_name_']`).value;
+        const yieldRate = assetEntries[i].querySelector(`[id^='yield_rate_']`).value;
+        const principleAmount = assetEntries[i].querySelector(`[id^='principle_amount_']`).value;
+        assets.push({
+            asset_name: assetName,
+            yield_rate: yieldRate,
+            principle_amount: principleAmount
+        });
+    }
+
+    const data = {
+        user_id: formData.get('user_id'),
+        fmodel_name: formData.get('fmodel_name'),
+        assets: assets
+    };
+
+    const csrftoken = formData.get('csrfmiddlewaretoken');
+
+    fetch('{% url "create_assets" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response:', data); // Log the response to the console
+        if (data.error) {
+            alert(data.error);
+        } else {
+            alert('Assets created successfully');
+            // Optionally, update the UI with the new asset data
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function submitEditFmodelForm() {
+    const form = document.getElementById('editFmodelForm');
+    const formData = new FormData(form);
+    const new_name = formData.get('fmodel_name');
+    const csrftoken = formData.get('csrfmiddlewaretoken');
+
+    fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({ new_name: new_name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response:', data);
+        if (data.error) {
+            alert(data.error);
+        } else {
+            alert('FModel name updated successfully');
+            // Optionally, update the UI with the new FModel name
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
 {% endblock %}
