@@ -22,8 +22,15 @@ class ExpenseAdmin(admin.ModelAdmin):
 
 class AssetAdmin(admin.ModelAdmin):
     list_display = ('id', 'fmodel', 'asset_name', 'yield_rate', 'principle_amount')
-    search_fields = ('asset_name', 'fmodel__fmodel_name')
-    list_filter = ('fmodel',)
+    search_fields = ('asset_name',)
+    list_filter = ('fmodel', 'yield_rate')
+    ordering = ('id',)
+    readonly_fields = ('id',)
+    fieldsets = (
+        (None, {
+            'fields': ('id', 'fmodel', 'asset_name', 'yield_rate', 'principle_amount')
+        }),
+    )
 
 class ProfilePageAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'fmodel', 'page_name')

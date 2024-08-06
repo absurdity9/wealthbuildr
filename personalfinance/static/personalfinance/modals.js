@@ -8,7 +8,6 @@ function saveEdits() {
         .then(data => {
             // Create an empty object to store the changed values
             let changedData = {};
-
             // Check if the model name has been changed
             let modelName = document.getElementById('model_name').value;
             if (modelName !== data.model_name) {
@@ -47,7 +46,7 @@ function saveEdits() {
             let assetsContainer = document.getElementById('assetsContainer');
             let changedAssets = [];
             for (let i = 0; i < assetsContainer.children.length; i++) {
-                let assetName = assetsContainer.children[i].querySelector('p.card-header-title').textContent;
+                let assetName = assetsContainer.children[i].querySelector(`input[name="asset_name_${i}"]`).value;
                 let yieldRate = assetsContainer.children[i].querySelector(`input[name="yield_rate_${i}"]`).value;
                 let principleAmount = assetsContainer.children[i].querySelector(`input[name="principle_amount_${i}"]`).value;
                 if (assetName !== data.assets[i].asset_name || yieldRate !== data.assets[i].yield_rate || principleAmount !== data.assets[i].principle_amount) {
@@ -71,8 +70,12 @@ function saveEdits() {
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
-                // Handle the response from the server
+                if (data.success) {
+                    closeModal();
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'An error occurred'));
+                }
             })
             .catch(error => console.error('Error:', error));
         })

@@ -237,7 +237,8 @@
                 .then(response => response.json())
                 .then(data => {
                     localStorage.setItem('fmodelId', fmodelId);
-                    console.log(data);
+                    console.log(data.model_info.model_name);
+
                     // Populate basic fields
                     document.getElementById('model_name').value = data.model_info.model_name;
         
@@ -333,9 +334,7 @@
                 })
                 .catch(error => console.error('Error:', error));
         };
-        
-        
-
+            
         // Hide the edit modal
         window.closeModal = function() {
             document.getElementById('editModal').classList.remove('is-active');
