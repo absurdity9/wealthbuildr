@@ -352,13 +352,13 @@ def edit_fmodel(request, fmodel_id):
     if request.method == 'POST':
         # Get the JSON data from the request body
         data = json.loads(request.body)
-
+        print(data)
         # Get the financial model object
         fmodel = FModel.objects.get(id=fmodel_id)
 
         # Update the model name if it has been changed
-        if 'fmodel_name' in data:
-            fmodel.fmodel_name = data['fmodel_name']
+        if 'model_name' in data:
+            fmodel.fmodel_name = data['model_name']
             fmodel.save()
 
         # Update the income data if it has been changed
