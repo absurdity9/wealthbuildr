@@ -237,7 +237,7 @@
                 .then(response => response.json())
                 .then(data => {
                     localStorage.setItem('fmodelId', fmodelId);
-        
+                    console.log(data);
                     // Populate basic fields
                     document.getElementById('model_name').value = data.model_info.model_name;
         
@@ -302,9 +302,15 @@
                         assetsContainer.innerHTML += `
                         <div class="card ">
                             <header class="card-header">
-                                <p class="card-header-title">${asset.asset_name}</p>
+                                <p class="card-header-title">Asset ${index + 1}</p>
                             </header>
                             <div class="card-content">
+                                <div class="field">
+                                    <label class="label">Asset Name</label>
+                                    <div class="control">
+                                        <input class="input" type="text" name="asset_name_${index}" value="${asset.asset_name}">
+                                    </div>
+                                </div>
                                 <div class="field">
                                     <label class="label">Yield Rate</label>
                                     <div class="control">

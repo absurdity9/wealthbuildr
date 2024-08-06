@@ -38,7 +38,9 @@ def index(request):
             'assets': list(assets.values())
         }
         data[fmodel.id] = model_data
-        
+    
+    print(data)  # For debugging purposes
+    
     json_data = simplejson.dumps(data, use_decimal=True)
     
     context = {
