@@ -11,7 +11,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, LoginForm
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-import simplejson as json
+import simplejson
+from decimal import Decimal
 from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
@@ -21,13 +22,11 @@ def index(request):
     user = request.user
     fmodels = FModel.objects.filter(user=user).prefetch_related('income_set', 'expense_set', 'asset_set')
     fmodel_count = fmodels.count()
-
     data = {}
     for fmodel in fmodels:
         incomes = fmodel.income_set.all()
         expenses = fmodel.expense_set.all()
         assets = fmodel.asset_set.all()
-
         model_data = {
             'model_info': {
                 'model_id': fmodel.id,
@@ -38,17 +37,15 @@ def index(request):
             'expenses': list(expenses.values()),
             'assets': list(assets.values())
         }
-
         data[fmodel.id] = model_data
-
-    json_data = json.dumps(data)
-
+        
+    json_data = simplejson.dumps(data, use_decimal=True)
+    
     context = {
         'user': user,
         'fmodel_count': fmodel_count,
         'fmodels_data': json_data
     }
-
     return render(request, 'personalfinance/index.html', context)
 
 def add(request):
@@ -343,24 +340,29 @@ def login_view(request):
 def logout_view(request):
     logout(request)
 
-@csrf_exempt    
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import FModel, Income, Expense, Asset
+
+@csrf_exempt
 def edit_fmodel(request, fmodel_id):
     if request.method == 'POST':
         # Get the JSON data from the request body
         data = json.loads(request.body)
 
         # Get the financial model object
-        fmodel = FinancialModel.objects.get(id=fmodel_id)
+        fmodel = FModel.objects.get(id=fmodel_id)
 
         # Update the model name if it has been changed
-        if 'model_name' in data:
-            fmodel.model_name = data['model_name']
+        if 'fmodel_name' in data:
+            fmodel.fmodel_name = data['fmodel_name']
             fmodel.save()
 
         # Update the income data if it has been changed
         if 'incomes' in data:
             for i, income_data in enumerate(data['incomes']):
-                income = fmodel.incomes.all()[i]
+                income = fmodel.income_set.all()[i]
                 if 'income_name' in income_data:
                     income.income_name = income_data['income_name']
                 if 'value' in income_data:
@@ -370,7 +372,7 @@ def edit_fmodel(request, fmodel_id):
         # Update the expense data if it has been changed
         if 'expenses' in data:
             for i, expense_data in enumerate(data['expenses']):
-                expense = fmodel.expenses.all()[i]
+                expense = fmodel.expense_set.all()[i]
                 if 'expense_name' in expense_data:
                     expense.expense_name = expense_data['expense_name']
                 if 'value' in expense_data:
@@ -380,7 +382,7 @@ def edit_fmodel(request, fmodel_id):
         # Update the asset data if it has been changed
         if 'assets' in data:
             for i, asset_data in enumerate(data['assets']):
-                asset = fmodel.assets.all()[i]
+                asset = fmodel.asset_set.all()[i]
                 if 'asset_name' in asset_data:
                     asset.asset_name = asset_data['asset_name']
                 if 'yield_rate' in asset_data:
