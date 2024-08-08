@@ -44,3 +44,4 @@ class ProfilePage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     fmodel = models.ForeignKey(FModel, on_delete=models.CASCADE)
     page_name = models.CharField(max_length=100)
+    is_public = models.BooleanField(default=True)
