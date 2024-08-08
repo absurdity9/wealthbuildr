@@ -19,6 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from personalfinance.models import PublishedPage
 import simplejson as json
+from django.http import HttpResponseForbidden
 
 logger = logging.getLogger(__name__)
 
@@ -407,10 +408,14 @@ def edit_fmodel(request, fmodel_id):
 def published_page_view(request, slug):
     published_page = get_object_or_404(PublishedPage, slug=slug)
     
+    if not published_page.is_public:
+        if not request.user.is_authenticated or published_page.fmodel.user != request.user:
+            return HttpResponseForbidden("You do not have permission to view this page.")
+    
     context = {
         'published_page': published_page,
         'fmodel': published_page.fmodel,
-        'incomes': published_page.fmodel.income_set.all(),  
+        'incomes': published_page.fmodel.income_set.all(),
     }
     
     return render(request, 'published_page.html', context)
