@@ -32,9 +32,21 @@ class AssetAdmin(admin.ModelAdmin):
         }),
     )
 
+class PublishedPageAdmin(admin.ModelAdmin):
+    list_display = ('page_name', 'fmodel', 'is_public', 'published_date')
+    search_fields = ('page_name', 'fmodel__fmodel_name')
+    list_filter = ('is_public', 'published_date')
+    ordering = ('-published_date',)
+    readonly_fields = ('published_date',)
+    fieldsets = (
+        (None, {
+            'fields': ('fmodel', 'page_name', 'slug', 'is_public', 'published_date')
+        }),
+    )
 
 admin.site.register(Userprofile, UserprofileAdmin)
 admin.site.register(FModel, FModelAdmin)
 admin.site.register(Income, IncomeAdmin)
 admin.site.register(Expense, ExpenseAdmin)
 admin.site.register(Asset, AssetAdmin)
+admin.site.register(PublishedPage, PublishedPageAdmin)
