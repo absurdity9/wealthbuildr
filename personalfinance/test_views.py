@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from rest_framework.reverse import reverse
 from django.contrib.auth.models import User 
-from personalfinance.models import Userprofile, FModel, Income, Expense, Asset, ProfilePage
+from personalfinance.models import Userprofile, FModel, Income, Expense, Asset, PublishedPage
 import json
 
 class TestCreateUserProfile(TestCase):
@@ -225,7 +225,7 @@ class TestCreateAssets(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), {'error': 'Invalid request method'})
 
-class TestCreateProfilePage(TestCase):
+class TestCreatePublishedPage(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='testuser', password='testpass')

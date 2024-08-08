@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-from personalfinance.models import Userprofile, FModel, Income, Expense, Asset, ProfilePage
+from personalfinance.models import Userprofile, FModel, Income, Expense, Asset, PublishedPage
 import logging
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
@@ -297,7 +297,7 @@ def create_profile_page(request):
             return JsonResponse({'error': 'User or FModel not found'}, status=400)
 
         try:
-            profile_page = ProfilePage.objects.create(
+            profile_page = PublishedPage.objects.create(
                 user=user,
                 fmodel=fmodel,
                 page_name=page_name
@@ -311,7 +311,7 @@ def create_profile_page(request):
             }, status=201)
 
         except Exception as e:
-            logger.error(f"Error creating ProfilePage: {e}")
+            logger.error(f"Error creating PublishedPage: {e}")
             return JsonResponse({'error': 'Internal server error'}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)

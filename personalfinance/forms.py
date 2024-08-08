@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
-from .models import FModel, Income, Expense, Asset, ProfilePage
+from .models import FModel, Income, Expense, Asset, PublishedPage
 from django.forms import formset_factory
 
 class RegisterForm(UserCreationForm):

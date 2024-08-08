@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Userprofile, FModel, Income, Expense, Asset, ProfilePage
+from .models import Userprofile, FModel, Income, Expense, Asset, PublishedPage
 
 class UserprofileAdmin(admin.ModelAdmin):
     list_display = ('user', 'age', 'job')
@@ -32,14 +32,9 @@ class AssetAdmin(admin.ModelAdmin):
         }),
     )
 
-class ProfilePageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'fmodel', 'page_name')
-    search_fields = ('page_name', 'user__username', 'fmodel__fmodel_name')
-    list_filter = ('user', 'fmodel')
 
 admin.site.register(Userprofile, UserprofileAdmin)
 admin.site.register(FModel, FModelAdmin)
 admin.site.register(Income, IncomeAdmin)
 admin.site.register(Expense, ExpenseAdmin)
 admin.site.register(Asset, AssetAdmin)
-admin.site.register(ProfilePage, ProfilePageAdmin)
