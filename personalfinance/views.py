@@ -14,6 +14,11 @@ from django.shortcuts import get_object_or_404
 import simplejson
 from decimal import Decimal
 from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from personalfinance.models import PublishedPage
+import simplejson as json
 
 logger = logging.getLogger(__name__)
 
@@ -409,3 +414,76 @@ def published_page_view(request, slug):
     }
     
     return render(request, 'published_page.html', context)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_or_update_published_page(request):
+    try:
+        data = json.loads(request.body)
+        page_name = data.get('page_name')
+        slug = data.get('slug')
+        is_public = data.get('is_public')
+        fmodel_id = data.get('fmodel')
+
+        if not page_name or not slug or not fmodel_id:
+            return HttpResponseBadRequest("Missing required fields.")
+
+        # Create or update PublishedPage
+        published_page, created = PublishedPage.objects.update_or_create(
+            slug=slug,
+            defaults={
+                'page_name': page_name,
+                'is_public': is_public,
+                'fmodel_id': fmodel_id
+            }
+        )
+
+        response_data = {
+            'id': published_page.id,
+            'page_name': published_page.page_name,
+            'slug': published_page.slug,
+            'is_public': published_page.is_public,
+            'published_date': published_page.published_date.isoformat(),
+            'fmodel': published_page.fmodel.id
+        }
+
+        return JsonResponse(response_data, status=200)
+
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("Invalid JSON data.")
+    except Exception as e:
+        return HttpResponseBadRequest(str(e))
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def toggle_public_status(request):
+    try:
+        data = json.loads(request.body)
+        slug = data.get('slug')
+        is_public = data.get('is_public')
+
+        if slug is None or is_public is None:
+            return HttpResponseBadRequest("Missing required fields.")
+
+        published_page = PublishedPage.objects.filter(slug=slug).first()
+        if not published_page:
+            return HttpResponseNotFound("Page not found.")
+
+        published_page.is_public = is_public
+        published_page.save()
+
+        response_data = {
+            'id': published_page.id,
+            'page_name': published_page.page_name,
+            'slug': published_page.slug,
+            'is_public': published_page.is_public,
+            'published_date': published_page.published_date.isoformat(),
+            'fmodel': published_page.fmodel.id
+        }
+
+        return JsonResponse(response_data, status=200)
+
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("Invalid JSON data.")
+    except Exception as e:
+        return HttpResponseBadRequest(str(e))

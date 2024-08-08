@@ -20,4 +20,6 @@ urlpatterns = [
     path('add/', views.add, name='add'),
     path('get_fmodel_data/<int:fmodel_id>/', views.get_fmodel_data, name='get_fmodel_data'),
     path('pages/<slug:slug>/', views.published_page_view, name='published_page'),
+    path('publish/', views.create_or_update_published_page, name='create_or_update_published_page'),
+    path('toggle-public/', views.toggle_public_status, name='toggle_public_status'),
 ] 
