@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ published_page.page_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .details, .incomes {
+            margin-bottom: 20px;
+        }
+        .details p, .incomes ul {
+            line-height: 1.6;
+        }
+        .incomes ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .incomes li {
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ published_page.page_name }}</h1>
+        <p>Status: {% if published_page.is_public %}Public{% else %}Private{% endif %}</p>
+        <p>Published Date: {{ published_page.published_date }}</p>
+
+        <div class="details">
+            <h2>Financial Model Details:</h2>
+            <p><strong>Model Name:</strong> {{ fmodel.fmodel_name }}</p>
+            <p><strong>Created:</strong> {{ fmodel.created }}</p>
+        </div>
+
+        <div class="incomes">
+            <h3>Incomes:</h3>
+            <ul>
+                {% for income in incomes %}
+                    <li>{{ income.income_name }}: {{ income.value }}</li>
+                {% empty %}
+                    <li>No income records available.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
