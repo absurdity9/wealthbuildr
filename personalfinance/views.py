@@ -18,7 +18,6 @@ from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFou
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from personalfinance.models import PublishedPage
-import simplejson as json
 from django.http import HttpResponseForbidden
 
 logger = logging.getLogger(__name__)
@@ -424,7 +423,7 @@ def published_page_view(request, slug):
 @require_http_methods(["POST"])
 def create_or_update_published_page(request):
     try:
-        data = json.loads(request.body)
+        data = simplejson.loads(request.body)
         page_name = data.get('page_name')
         slug = data.get('slug')
         is_public = data.get('is_public')
@@ -454,7 +453,7 @@ def create_or_update_published_page(request):
 
         return JsonResponse(response_data, status=200)
 
-    except json.JSONDecodeError:
+    except simplejson.JSONDecodeError:
         return HttpResponseBadRequest("Invalid JSON data.")
     except Exception as e:
         return HttpResponseBadRequest(str(e))
@@ -463,7 +462,7 @@ def create_or_update_published_page(request):
 @require_http_methods(["POST"])
 def toggle_public_status(request):
     try:
-        data = json.loads(request.body)
+        data = simplejson.loads(request.body)
         slug = data.get('slug')
         is_public = data.get('is_public')
 
@@ -488,7 +487,7 @@ def toggle_public_status(request):
 
         return JsonResponse(response_data, status=200)
 
-    except json.JSONDecodeError:
+    except simplejson.JSONDecodeError:
         return HttpResponseBadRequest("Invalid JSON data.")
     except Exception as e:
         return HttpResponseBadRequest(str(e))
