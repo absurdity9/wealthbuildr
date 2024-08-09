@@ -56,6 +56,50 @@
     </div>
 </div>
 
+<div id="shareModal" class="modal"> <!-- Share Modal -->
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Share Fmodel</p>
+            <button class="delete" aria-label="close" onclick="closeModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <form id="shareFmodelForm">
+                <div class="field">
+                    <label class="label">Model Name</label>
+                    <div class="control">
+                        <input class="input" type="text" id="share_model_name" name="share_model_name" disabled>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Slug</label>
+                    <div class="control">
+                        <input class="input" type="text" id="slug" name="slug" disabled>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Visibility</label>
+                    <div class="control">
+                        <label class="radio">
+                            <input type="radio" name="visibility" value="private" checked>
+                            Private
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="visibility" value="public">
+                            Public
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button" onclick="closeModal()">Back</button>
+            <button class="button is-success" onclick="publishPage()">Save</button>
+        </footer>
+    </div>
+</div>
+
+
 {% endblock %}
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
@@ -90,6 +134,7 @@
                     <header class="card-header">
                         <p class="card-header-title">${fmodel.model_info.model_name}</p>
                         <button class="button is-info is-small" onclick="showEditModal(${fmodelId})">Edit</button>
+                        <button class="button is-primary is-small" onclick="showShareModal(${fmodelId})">Share</button>
                     </header>
                     <div class="card-content">
                         <div class="content">

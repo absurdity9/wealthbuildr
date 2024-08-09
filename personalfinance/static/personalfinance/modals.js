@@ -81,3 +81,67 @@ function saveEdits() {
         })
         .catch(error => console.error('Error:', error));
 }
+
+function openShareModal() {
+    document.getElementById('shareModal').classList.add('is-active');
+}
+
+function closeShareModal() {
+    document.getElementById('shareModal').classList.remove('is-active');
+}
+
+function showShareModal(fmodelId) {
+    fetch(`/get_fmodel_data/${fmodelId}/`)
+        .then(response => response.json())
+        .then(data => {
+            localStorage.setItem('fmodelId', fmodelId);
+
+            const modelName = data.model_info.model_name;
+            document.getElementById('share_model_name').value = modelName;
+
+            // Generate slug by replacing spaces with hyphens
+            const slug = modelName.toLowerCase().replace(/\s+/g, '-');
+            document.getElementById('slug').value = slug;
+
+            // Open the share modal
+            document.getElementById('shareModal').classList.add('is-active');
+        })
+        .catch(error => console.error('Error fetching model data:', error));
+}
+
+// Close modal function (reuse from edit modal)
+window.closeModal = function() {
+    document.getElementById('shareModal').classList.remove('is-active');
+};
+
+function publishPage() {
+    const fmodelId = localStorage.getItem('fmodelId');
+    const visibility = document.querySelector('input[name="visibility"]:checked').value;
+    const slug = document.getElementById('slug').value;
+    const pageName = document.getElementById('share_model_name').value;
+
+    const data = {
+        'is_public': visibility === 'public',
+        'slug': slug,
+        'page_name': pageName,
+        'fmodel': fmodelId
+    };
+
+    fetch('/publish/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.id) {
+            alert('Page published successfully!');
+            closeShareModal(); // Close the modal after publishing
+        } else {
+            alert('Failed to publish the page.');
+        }
+    })
+    .catch(error => console.error('Error publishing page:', error));
+}
