@@ -82,15 +82,8 @@ function saveEdits() {
         .catch(error => console.error('Error:', error));
 }
 
-function openShareModal() {
-    document.getElementById('shareModal').classList.add('is-active');
-}
-
-function closeShareModal() {
-    document.getElementById('shareModal').classList.remove('is-active');
-}
-
 function showShareModal(fmodelId) {
+    
     fetch(`/get_fmodel_data/${fmodelId}/`)
         .then(response => response.json())
         .then(data => {
@@ -107,6 +100,10 @@ function showShareModal(fmodelId) {
             document.getElementById('shareModal').classList.add('is-active');
         })
         .catch(error => console.error('Error fetching model data:', error));
+}
+
+function closeModal() {
+    document.getElementById('shareModal').classList.remove('is-active');
 }
 
 // Close modal function (reuse from edit modal)
