@@ -102,14 +102,10 @@ function showShareModal(fmodelId) {
         .catch(error => console.error('Error fetching model data:', error));
 }
 
-function closeModal() {
+function closeShareModal() {
+    console.log("clicked");
     document.getElementById('shareModal').classList.remove('is-active');
 }
-
-// Close modal function (reuse from edit modal)
-window.closeModal = function() {
-    document.getElementById('shareModal').classList.remove('is-active');
-};
 
 function publishPage() {
     const fmodelId = localStorage.getItem('fmodelId');
@@ -118,12 +114,14 @@ function publishPage() {
     const pageName = document.getElementById('share_model_name').value;
 
     const data = {
-        'is_public': visibility === 'public',
+        'is_public': visibility === "True",
         'slug': slug,
         'page_name': pageName,
         'fmodel': fmodelId
     };
-
+    
+    console.log(data);
+    
     fetch('/publish/', {
         method: 'POST',
         headers: {
@@ -131,14 +129,20 @@ function publishPage() {
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.id) {
-            alert('Page published successfully!');
-            closeShareModal(); // Close the modal after publishing
-        } else {
-            alert('Failed to publish the page.');
-        }
+    .then(response => {
+        return response.json().then(body => {
+            if (response.ok) {
+                alert('Page published successfully!');
+                closeShareModal(); // Close the modal after publishing
+            } else if (response.status === 400 && body.error) {
+                alert(`Failed to publish the page: ${body.error}`);
+            } else {
+                alert('Failed to publish the page due to an unknown error.');
+            }
+        });
     })
-    .catch(error => console.error('Error publishing page:', error));
+    .catch(error => {
+        console.error('Error publishing page:', error);
+        alert('Error publishing page: ' + error.message);
+    });
 }

@@ -61,7 +61,7 @@
     <div class="modal-card">
         <header class="modal-card-head">
             <p class="modal-card-title">Share Fmodel</p>
-            <button class="delete" aria-label="close" onclick="closeModal()"></button>
+            <button class="delete" aria-label="close" onclick="closeShareModal()"></button>
         </header>
         <section class="modal-card-body">
             <form id="shareFmodelForm">
@@ -81,11 +81,11 @@
                     <label class="label">Visibility</label>
                     <div class="control">
                         <label class="radio">
-                            <input type="radio" name="visibility" value="private" checked>
+                            <input type="radio" name="visibility" value="False" checked>
                             Private
                         </label>
                         <label class="radio">
-                            <input type="radio" name="visibility" value="public">
+                            <input type="radio" name="visibility" value="True">
                             Public
                         </label>
                     </div>
@@ -93,12 +93,11 @@
             </form>
         </section>
         <footer class="modal-card-foot">
-            <button class="button" onclick="closeModal()">Back</button>
+            <button class="button" onclick="closeShareModal()">Back</button>
             <button class="button is-success" onclick="publishPage()">Save</button>
         </footer>
     </div>
 </div>
-
 
 {% endblock %}
 {% block scripts %}
@@ -108,12 +107,11 @@
 
 <script>    
     document.addEventListener('DOMContentLoaded', function() {
-
         const fmodelsData = JSON.parse('{{ fmodels_data | escapejs }}');
         const fmodelContainer = document.getElementById('fmodel-container');
     
         const duration = 5; // Set the duration to 5 years
-    
+        
         for (const fmodelId in fmodelsData) {
             const fmodel = fmodelsData[fmodelId];
     
@@ -192,7 +190,7 @@
             `;
             card.innerHTML = cardContent;
             fmodelContainer.appendChild(card);
-    
+
             const ctxCashflow = document.getElementById(cashflowCanvasId).getContext('2d'); // Cashflow chart
             new Chart(ctxCashflow, {
                 type: 'bar',
@@ -384,6 +382,7 @@
         window.closeModal = function() {
             document.getElementById('editModal').classList.remove('is-active');
         };
+
 });
     
     

@@ -431,8 +431,16 @@ def create_or_update_published_page(request):
 
         if not page_name or not slug or not fmodel_id:
             return HttpResponseBadRequest("Missing required fields.")
-
-        # Create or update PublishedPage
+        
+        existing_page = PublishedPage.objects.filter(fmodel_id=fmodel_id).exclude(slug=slug).first()
+        if existing_page:
+            return HttpResponseBadRequest(
+                simplejson.dumps({"error": f"A PublishedPage with fmodel_id {fmodel_id} already exists."}),
+                content_type='application/json'
+            )
+        
+        print(f"Existing page: {existing_page}")         # Create or update PublishedPage
+        
         published_page, created = PublishedPage.objects.update_or_create(
             slug=slug,
             defaults={
