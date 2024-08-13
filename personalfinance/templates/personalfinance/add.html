@@ -262,10 +262,12 @@ function submitAssetForm() {
         const assetName = assetEntries[i].querySelector(`[id^='asset_name_']`).value;
         const yieldRate = assetEntries[i].querySelector(`[id^='yield_rate_']`).value;
         const principleAmount = assetEntries[i].querySelector(`[id^='principle_amount_']`).value;
+        const allocationPct = assetEntries[i].querySelector(`[id^='allocation_pct']`).value;
         assets.push({
             asset_name: assetName,
             yield_rate: yieldRate,
-            principle_amount: principleAmount
+            principle_amount: principleAmount,
+            allocation_pct: allocationPct 
         });
     }
 
@@ -287,16 +289,16 @@ function submitAssetForm() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Response:', data); // Log the response to the console
+        console.log('Response:', data); 
         if (data.error) {
             alert(data.error);
         } else {
             alert('Assets created successfully');
-            // Optionally, update the UI with the new asset data
         }
     })
     .catch(error => console.error('Error:', error));
 }
+
 
 function submitEditFmodelForm() {
     const form = document.getElementById('editFmodelForm');

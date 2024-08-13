@@ -4,6 +4,14 @@
 {% block title %}Add model{% endblock %}
 
 {% block content %}
+<style>
+    .tab-content {
+        display: none;
+    }
+    .tab-content.is-active {
+        display: block;
+    }
+</style>
 <section class="section">
     <div class="container">
         <div class="column is-full">
@@ -183,22 +191,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('.tabs ul li');
     const contents = document.querySelectorAll('.tab-content');
 
+    // Function to activate the tab and its content
+    const activateTab = (tab) => {
+        const target = tab.getAttribute('data-tab');
+        
+        // Deactivate all tabs and contents
+        tabs.forEach(t => t.classList.remove('is-active'));
+        contents.forEach(c => c.classList.remove('is-active'));
+
+        // Activate the clicked tab and corresponding content
+        tab.classList.add('is-active');
+        document.getElementById(target).classList.add('is-active');
+    };
+
+    // Add click event listener to each tab
     tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const target = tab.getAttribute('data-tab');
-
-            tabs.forEach(t => t.classList.remove('is-active'));
-            tab.classList.add('is-active');
-
-            contents.forEach(content => {
-                content.classList.remove('is-active');
-                if (content.id === target) {
-                    content.classList.add('is-active');
-                }
-            });
-        });
+        tab.addEventListener('click', () => activateTab(tab));
     });
-});    
+
+    // Initialize the first tab as active
+    activateTab(tabs[0]);
+});  
 
     // Form Submission 
 function submitFModelForm() {
