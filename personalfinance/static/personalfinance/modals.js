@@ -92,11 +92,9 @@ function showShareModal(fmodelId) {
             const modelName = data.model_info.model_name;
             document.getElementById('share_model_name').value = modelName;
 
-            // Generate slug by replacing spaces with hyphens
             const slug = modelName.toLowerCase().replace(/\s+/g, '-');
             document.getElementById('slug').value = slug;
 
-            // Open the share modal
             document.getElementById('shareModal').classList.add('is-active');
         })
         .catch(error => console.error('Error fetching model data:', error));
@@ -105,6 +103,57 @@ function showShareModal(fmodelId) {
 function closeShareModal() {
     console.log("clicked");
     document.getElementById('shareModal').classList.remove('is-active');
+}
+
+function togglePublicStatus(data) {
+
+    console.log("toggle status fx on");
+
+    const requestData = {
+        slug: data.slug,
+        is_public: data.is_public
+    };
+    console.log(requestData);
+
+    let jsonBody = JSON.stringify(requestData);
+
+    return fetch('/toggle_public/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: jsonBody
+    })
+    .then(response => response.json().then(body => {
+        if (response.ok) {
+            alert('Page public status toggled successfully!');
+            closeShareModal(); // Close the modal after updating
+        } else if (response.status === 400 && body.error) {
+            alert(`Failed to toggle public status: ${body.error}`);
+        } else {
+            alert('Failed to toggle public status due to an unknown error.');
+        }
+    }))
+    .catch(error => {
+        console.error('Error toggling public status:', error);
+        alert('Error toggling public status: ' + error.message);
+    });
+}
+
+function checkPageExists(fmodelId) {
+    return fetch(`/check-published-page/${fmodelId}/`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to check page existence');
+            }
+            return response.json();
+        })
+        .then(data => data.exists)
+        .catch(error => {
+            console.error('Error checking page existence:', error);
+            alert('Error checking page existence: ' + error.message);
+            return false; // Assuming the page does not exist in case of an error
+        });
 }
 
 function publishPage() {
@@ -119,30 +168,38 @@ function publishPage() {
         'page_name': pageName,
         'fmodel': fmodelId
     };
-    
-    console.log(data);
-    
-    fetch('/publish/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        return response.json().then(body => {
-            if (response.ok) {
-                alert('Page published successfully!');
-                closeShareModal(); // Close the modal after publishing
-            } else if (response.status === 400 && body.error) {
-                alert(`Failed to publish the page: ${body.error}`);
-            } else {
-                alert('Failed to publish the page due to an unknown error.');
-            }
-        });
-    })
-    .catch(error => {
-        console.error('Error publishing page:', error);
-        alert('Error publishing page: ' + error.message);
+
+    checkPageExists(fmodelId).then(exists => {
+
+        if (exists) {
+            // If the page exists, toggle its public status
+            togglePublicStatus({
+                'slug': slug,
+                'is_public': visibility === "True"
+            });
+        } else {
+            // If the page does not exist, publish it
+            fetch('/publish/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json().then(body => {
+                if (response.ok) {
+                    alert('Page published successfully!');
+                    closeShareModal(); // Close the modal after publishing
+                } else if (response.status === 400 && body.error) {
+                    alert(`Failed to publish the page: ${body.error}`);
+                } else {
+                    alert('Failed to publish the page due to an unknown error.');
+                }
+            }))
+            .catch(error => {
+                console.error('Error publishing page:', error);
+                alert('Error publishing page: ' + error.message);
+            });
+        }
     });
 }

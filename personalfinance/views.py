@@ -467,8 +467,28 @@ def create_or_update_published_page(request):
         return HttpResponseBadRequest(str(e))
 
 @csrf_exempt
-@require_http_methods(["POST"])
-def toggle_public_status(request):
+def check_published_page(request, fmodel_id):
+    try:
+        # Try to get the PublishedPage object for the given fmodel_id
+        published_page = PublishedPage.objects.get(fmodel_id=fmodel_id)
+        response = {
+            'exists': True,
+            'page_name': published_page.page_name,
+            'is_public': published_page.is_public,
+            'slug': published_page.slug,
+            'published_date': published_page.published_date.isoformat(),
+        }
+    except PublishedPage.DoesNotExist:
+        # If no PublishedPage exists, return a response indicating that
+        response = {
+            'exists': False,
+            'message': f"No PublishedPage found for fmodel_id {fmodel_id}."
+        }
+
+    return JsonResponse(response)
+
+@csrf_exempt
+def toggle_public(request):
     try:
         data = simplejson.loads(request.body)
         slug = data.get('slug')
