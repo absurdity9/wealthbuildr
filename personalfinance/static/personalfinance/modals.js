@@ -1,5 +1,4 @@
 function saveEdits() {
-    // Get the fmodelId from local storage
     let fmodelId = localStorage.getItem('fmodelId');
 
     // Fetch the existing data for the financial model
