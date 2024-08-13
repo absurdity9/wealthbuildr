@@ -38,6 +38,7 @@ class Asset(models.Model):
     asset_name = models.CharField(max_length=100)
     yield_rate = models.DecimalField(max_digits=5, decimal_places=2)
     principle_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    allocation_pct = models.DecimalField(max_digits=5, decimal_places=2)
 
 class PublishedPage(models.Model):
     id = models.AutoField(primary_key=True)

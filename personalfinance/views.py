@@ -56,8 +56,10 @@ def index(request):
     return render(request, 'personalfinance/index.html', context)
 
 def add(request):
-    print(request.user)
     return render(request, 'personalfinance/add.html')
+
+def add_copy(request):
+    return render(request, 'personalfinance/add_copy.html')
 
 def get_fmodel_data(request, fmodel_id):
     fmodel = get_object_or_404(FModel, id=fmodel_id)
@@ -234,6 +236,7 @@ def create_expense(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+
 def create_assets(request):
     if request.method == 'POST':
         try:
@@ -257,15 +260,17 @@ def create_assets(request):
                 asset_name = asset_data.get('asset_name')
                 yield_rate = asset_data.get('yield_rate')
                 principle_amount = asset_data.get('principle_amount')
+                allocation_pct = asset_data.get('allocation_pct')  # Get allocation_pct from the request
 
-                if not (asset_name and yield_rate and principle_amount):
+                if not (asset_name and yield_rate and principle_amount and allocation_pct is not None):
                     return JsonResponse({'error': 'Missing required fields in assets array'}, status=400)
 
                 asset = Asset.objects.create(
                     fmodel=fmodel,
                     asset_name=asset_name,
                     yield_rate=yield_rate,
-                    principle_amount=principle_amount
+                    principle_amount=principle_amount,
+                    allocation_pct=allocation_pct  # Include allocation_pct when creating the asset
                 )
 
                 created_assets.append({
@@ -273,7 +278,8 @@ def create_assets(request):
                     'fmodel_id': asset.fmodel.id,
                     'asset_name': asset.asset_name,
                     'yield_rate': str(asset.yield_rate),
-                    'principle_amount': str(asset.principle_amount)
+                    'principle_amount': str(asset.principle_amount),
+                    'allocation_pct': str(asset.allocation_pct)  # Return allocation_pct in the response
                 })
 
             return JsonResponse({'assets': created_assets}, status=201)
