@@ -7,6 +7,7 @@ function saveEdits() {
         .then(data => {
             // Create an empty object to store the changed values
             let changedData = {};
+
             // Check if the model name has been changed
             let modelName = document.getElementById('model_name').value;
             if (modelName !== data.model_name) {
@@ -48,8 +49,20 @@ function saveEdits() {
                 let assetName = assetsContainer.children[i].querySelector(`input[name="asset_name_${i}"]`).value;
                 let yieldRate = assetsContainer.children[i].querySelector(`input[name="yield_rate_${i}"]`).value;
                 let principleAmount = assetsContainer.children[i].querySelector(`input[name="principle_amount_${i}"]`).value;
-                if (assetName !== data.assets[i].asset_name || yieldRate !== data.assets[i].yield_rate || principleAmount !== data.assets[i].principle_amount) {
-                    changedAssets.push({ asset_name: assetName, yield_rate: yieldRate, principle_amount: principleAmount });
+                let allocationPct = assetsContainer.children[i].querySelector(`input[name="allocation_pct_${i}"]`).value;
+
+                // Check if any asset field has been changed
+                if (assetName !== data.assets[i].asset_name || 
+                    yieldRate !== data.assets[i].yield_rate || 
+                    principleAmount !== data.assets[i].principle_amount || 
+                    allocationPct !== data.assets[i].allocation_pct) {
+                    
+                    changedAssets.push({ 
+                        asset_name: assetName, 
+                        yield_rate: yieldRate, 
+                        principle_amount: principleAmount, 
+                        allocation_pct: allocationPct 
+                    });
                 }
             }
             if (changedAssets.length > 0) {
@@ -58,7 +71,7 @@ function saveEdits() {
 
             // Convert the changedData object to a JSON string
             let jsonBody = JSON.stringify(changedData);
-            console.log(jsonBody)
+            console.log(jsonBody);
             // Send the JSON string to the server using a fetch request
             fetch(`/edit_fmodel/${fmodelId}/`, {
                 method: 'POST',
@@ -80,6 +93,7 @@ function saveEdits() {
         })
         .catch(error => console.error('Error:', error));
 }
+
 
 function showShareModal(fmodelId) {
     

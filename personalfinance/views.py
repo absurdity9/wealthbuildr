@@ -359,6 +359,7 @@ import json
 from .models import FModel, Income, Expense, Asset
 
 @csrf_exempt
+@csrf_exempt
 def edit_fmodel(request, fmodel_id):
     if request.method == 'POST':
         # Get the JSON data from the request body
@@ -402,6 +403,8 @@ def edit_fmodel(request, fmodel_id):
                     asset.yield_rate = asset_data['yield_rate']
                 if 'principle_amount' in asset_data:
                     asset.principle_amount = asset_data['principle_amount']
+                if 'allocation_pct' in asset_data:
+                    asset.allocation_pct = asset_data['allocation_pct']
                 asset.save()
 
         # Return a JSON response indicating success
