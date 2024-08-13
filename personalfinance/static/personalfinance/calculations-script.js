@@ -1,3 +1,4 @@
+/*
 function calculateNetSalary(annualGrossSalary) {
     // Calculate income tax
     const personalAllowance = 12570;
@@ -9,13 +10,13 @@ function calculateNetSalary(annualGrossSalary) {
     let incomeTax = 0;
   
     if (taxableIncome > 0) {
-      if (taxableIncome <= basicRateThreshold) {
-        incomeTax = taxableIncome * basicRate;
-      } else {
-        const basicTax = basicRateThreshold * basicRate;
-        const additionalTax = (taxableIncome - basicRateThreshold) * higherRate;
-        incomeTax = basicTax + additionalTax;
-      }
+        if (taxableIncome <= basicRateThreshold) {
+            incomeTax = taxableIncome * basicRate;
+        } else {
+            const basicTax = basicRateThreshold * basicRate;
+            const additionalTax = (taxableIncome - basicRateThreshold) * higherRate;
+            incomeTax = basicTax + additionalTax;
+        }
     }
   
     // Deduct employees' Class 1 National Insurance contributions (NICs)
@@ -24,7 +25,7 @@ function calculateNetSalary(annualGrossSalary) {
     let nics = 0;
   
     if (annualGrossSalary > nicsLowerThreshold) {
-      nics = (annualGrossSalary - nicsLowerThreshold) * nicsRate;
+        nics = (annualGrossSalary - nicsLowerThreshold) * nicsRate;
     }
   
     // Convert income tax and NICs to monthly figures
@@ -34,15 +35,9 @@ function calculateNetSalary(annualGrossSalary) {
     // Calculate net annual salary
     const netAnnualSalary = annualGrossSalary - incomeTax - nics;
   
-    // Convert to net monthly salary
-    //const netMonthlySalary = netAnnualSalary / 12;
-  
-    // Output income tax and NICs figures as monthly amounts
-    //console.log("Income Tax (Monthly): £", monthlyIncomeTax.toFixed(2));
-    //console.log("NICs (Monthly): £", monthlyNICs.toFixed(2));
-  
     return netAnnualSalary;
-  }
+}
+*/
 
 function calculateROI(initialAmount, yieldRate, duration) {
   let accumulatedAmount = initialAmount * (1 + yieldRate / 100); 
@@ -65,4 +60,20 @@ function formatDate(datetime) {
   const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based, so add 1
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function calculateFutureValue(initialSavings, monthlyContribution, annualRate, months) {
+  // Convert annual interest rate to monthly interest rate
+  const monthlyRate = annualRate / 12;
+  
+  // Calculate the future value of the initial savings
+  const futureValueInitialSavings = initialSavings * Math.pow(1 + monthlyRate, months);
+  
+  // Calculate the future value of the monthly contributions
+  const futureValueMonthlyContributions = monthlyContribution * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate;
+  
+  // Total future value
+  const totalFutureValue = futureValueInitialSavings + futureValueMonthlyContributions;
+  
+  return totalFutureValue.toFixed(2); // Returns the result rounded to 2 decimal places
 }

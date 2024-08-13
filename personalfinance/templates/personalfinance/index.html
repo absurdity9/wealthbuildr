@@ -115,8 +115,7 @@
         for (const fmodelId in fmodelsData) {
             const fmodel = fmodelsData[fmodelId];
     
-            const GrosstotalIncome = fmodel.incomes.reduce((sum, income) => sum + parseFloat(income.value), 0);
-            const totalIncome = calculateNetSalary(GrosstotalIncome);
+            const totalIncome = fmodel.incomes.reduce((sum, income) => sum + parseFloat(income.value), 0);
             const totalExpense = fmodel.expenses.reduce((sum, expense) => sum + parseFloat(expense.value), 0);
             const remainder = totalIncome - totalExpense;
     
@@ -144,31 +143,34 @@
                             <!-- Row 2: Cash / Yield / Wealth metrics -->
                             <div class="columns">
                                 <div class="column">
-                                    <h6 class="title is-6">Cash in</h6>
+                                    <h6 class="title is-6">Cash in per month</h6>
                                     <ul>
                                         ${fmodel.incomes.map(income => `
-                                            <li>${income.income_name}: ${income.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
+                                            <li>${income.income_name}: ${income.value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</li>
                                         `).join('')}
-                                        <li>Total After Tax: £${totalIncome.toLocaleString(undefined, {maximumFractionDigits: 0 })}
+                                        <li>Total: £${totalIncome.toLocaleString(undefined, {maximumFractionDigits: 0 })}
+
                                     </ul>
                                 </div>
                                 <div class="column">
-                                    <h6 class="title is-6">Cash out</h6>
+                                    <h6 class="title is-6">Cash out per month</h6>
                                     <ul>
                                         ${fmodel.expenses.map(expense => `
-                                            <li>${expense.expense_name}: ${expense.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
+                                            <li>${expense.expense_name}: ${expense.value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</li>
                                         `).join('')}
+                                        <li>Total: £${totalExpense.toLocaleString(undefined, {maximumFractionDigits: 0 })}
+
                                     </ul>
                                 </div>
                                 <div class="column">
-                                    <h6 class="title is-6">Cash left</h6>
-                                    <p>${remainder.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                    <h6 class="title is-6">Cash left per month</h6>
+                                    <p>Total: £${remainder.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
                                 </div>
                                 <div class="column">
                                     <h6 class="title is-6">Assets</h6>
                                     <ul id="asset-list-${fmodelId}">
                                         ${fmodel.assets.map(asset => `
-                                            <li>${asset.asset_name}: Yield Rate ${asset.yield_rate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, Principal Amount: ${asset.principle_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>
+                                            <li>${asset.asset_name}: Yield Rate ${asset.yield_rate.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}, Principal Amount: ${asset.principle_amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</li>
                                         `).join('')}
                                         <li id="total-after-t-years-${fmodelId}" class="mt-4"></li>
                                     </ul>
@@ -236,7 +238,7 @@
                 return sum + calculateROI(asset.principle_amount, asset.yield_rate, duration).total;
             }, 0);
     
-            document.getElementById(`total-after-t-years-${fmodelId}`).innerHTML = `Total After ${duration} Years for All Assets: £${totalAfterTyears.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById(`total-after-t-years-${fmodelId}`).innerHTML = `Total After ${duration} Years for All Assets: £${totalAfterTyears.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
     
             const ctxAsset = document.getElementById(assetCanvasId).getContext('2d'); // Asset Chart
             new Chart(ctxAsset, {

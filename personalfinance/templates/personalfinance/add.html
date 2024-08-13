@@ -31,6 +31,9 @@
             <div class="card"> <!-- Add income -->
                 <div class="card-content">
                     <h2 class="title">Add Income</h2>
+                    <div class="block">
+                        <p> If you are employed, go to <a href="https://www.tax.service.gov.uk/estimate-paye-take-home-pay/your-pay"> HMRC's website </a> to calculate your take home after tax.</p>
+                    </div> 
                     <form id="createIncomeForm">
                         {% csrf_token %}
                         <input type="hidden" name="user_id" value="{{ user.id }}">
@@ -47,7 +50,7 @@
                             </div>
                         </div>
                         <div class="field">
-                            <label for="value" class="label">Amount (£):</label>
+                            <label for="value" class="label">Monthly Takehome Amount (£):</label>
                             <div class="control">
                                 <input type="number" step="0.01" id="value" name="value" class="input" required>
                             </div>
