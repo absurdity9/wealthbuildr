@@ -157,7 +157,7 @@ def create_income(request):
         fmodel_name = request.POST.get('fmodel_name')
         income_name = request.POST.get('income_name')
         value = request.POST.get('value')
-
+        
         if not (user_id and fmodel_name and income_name and value):
             return JsonResponse({'error': 'Missing required fields'}, status=400)
 
@@ -188,6 +188,7 @@ def create_income(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+@csrf_exempt
 def create_expense(request):
     if request.method == 'POST':
         try:
@@ -236,6 +237,7 @@ def create_expense(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+@csrf_exempt
 
 def create_assets(request):
     if request.method == 'POST':
@@ -358,7 +360,6 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from .models import FModel, Income, Expense, Asset
 
-@csrf_exempt
 @csrf_exempt
 def edit_fmodel(request, fmodel_id):
     if request.method == 'POST':

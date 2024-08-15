@@ -57,3 +57,4 @@ function addAssetEntry() {
   assetsContainer.appendChild(newEntry);
   assetCount++;
 }
+
