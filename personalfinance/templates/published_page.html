@@ -17,17 +17,17 @@
             max-width: 800px;
             margin: 0 auto;
         }
-        .details, .incomes {
+        .details, .incomes, .expenses, .assets {
             margin-bottom: 20px;
         }
-        .details p, .incomes ul {
+        .details p, .incomes ul, .expenses ul, .assets ul {
             line-height: 1.6;
         }
-        .incomes ul {
+        ul {
             list-style-type: none;
             padding: 0;
         }
-        .incomes li {
+        li {
             padding: 5px 0;
         }
     </style>
@@ -51,6 +51,28 @@
                     <li>{{ income.income_name }}: {{ income.value }}</li>
                 {% empty %}
                     <li>No income records available.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="expenses">
+            <h3>Expenses:</h3>
+            <ul>
+                {% for expense in expenses %}
+                    <li>{{ expense.expense_name }}: {{ expense.value }}</li>
+                {% empty %}
+                    <li>No expense records available.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="assets">
+            <h3>Assets:</h3>
+            <ul>
+                {% for asset in assets %}
+                    <li>{{ asset.asset_name }}: {{ asset.principle_amount }} at {{ asset.yield_rate }}% yield ({{ asset.allocation_pct }}% allocation)</li>
+                {% empty %}
+                    <li>No asset records available.</li>
                 {% endfor %}
             </ul>
         </div>

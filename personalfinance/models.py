@@ -19,7 +19,6 @@ class FModel(models.Model):
             models.UniqueConstraint(fields=['user', 'fmodel_name'], name='unique_fmodel_per_user')
         ]
 
-
 class Income(models.Model):
     id = models.IntegerField(primary_key=True)
     fmodel = models.ForeignKey(FModel, on_delete=models.CASCADE)

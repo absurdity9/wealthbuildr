@@ -414,17 +414,28 @@ def edit_fmodel(request, fmodel_id):
 def published_page_view(request, slug):
     published_page = get_object_or_404(PublishedPage, slug=slug)
     
+    # Check if the page is public or if the user has permission to view it
     if not published_page.is_public:
         if not request.user.is_authenticated or published_page.fmodel.user != request.user:
             return HttpResponseForbidden("You do not have permission to view this page.")
     
+    # Fetching related data
+    incomes = published_page.fmodel.income_set.all()
+    expenses = published_page.fmodel.expense_set.all()
+    assets = published_page.fmodel.asset_set.all()
+
+    # Preparing the context to pass to the template
     context = {
         'published_page': published_page,
         'fmodel': published_page.fmodel,
-        'incomes': published_page.fmodel.income_set.all(),
+        'incomes': incomes,
+        'expenses': expenses,
+        'assets': assets,
     }
     
+    # Render the template with the context data
     return render(request, 'published_page.html', context)
+
 
 @csrf_exempt
 @require_http_methods(["POST"])
