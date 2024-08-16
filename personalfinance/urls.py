@@ -23,4 +23,5 @@ urlpatterns = [
     path('publish/', views.create_or_update_published_page, name='create_or_update_published_page'),
     path('check-published-page/<int:fmodel_id>/', views.check_published_page, name='check_published_page'),
     path('toggle_public/', views.toggle_public, name='toggle_public'),
+    path('api/pages/<slug>/', views.api_page_view, name='api_page_view'),
     ] 

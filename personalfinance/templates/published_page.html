@@ -1,81 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ published_page.page_name }}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-        }
-        h1 {
-            color: #333;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .details, .incomes, .expenses, .assets {
-            margin-bottom: 20px;
-        }
-        .details p, .incomes ul, .expenses ul, .assets ul {
-            line-height: 1.6;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            padding: 5px 0;
-        }
-    </style>
-</head>
-<body>
+{% extends 'nav.html' %}
+{% load static %}
+
+{% block title %}Pages{% endblock %}
+
+{% block content %}
+<section class="section">
     <div class="container">
-        <h1>{{ published_page.page_name }}</h1>
-        <p>Status: {% if published_page.is_public %}Public{% else %}Private{% endif %}</p>
-        <p>Published Date: {{ published_page.published_date }}</p>
+        <div class="card mt-5">
+            <header class="card-header">
+                <p class="card-header-title" id="fmodel-name">
+                    {{ fmodel.fmodel_name }}  <!-- Initial content from context -->
+                </p>
+            </header>
+            <div class="card-content">
+                <div class="content">
+                    <!-- Row 1: Created on -->
+                    <div class="mb-4">
+                        <p><strong>Published Date:</strong> <span id="published-date">{{ published_page.published_date }}</span></p> <!-- Initial content from context -->
+                        <p><strong>Created on:</strong> <span id="created-date">{{ fmodel.date_created }}</span></p> <!-- Initial content from context -->
+                    </div>
 
-        <div class="details">
-            <h2>Financial Model Details:</h2>
-            <p><strong>Model Name:</strong> {{ fmodel.fmodel_name }}</p>
-            <p><strong>Created:</strong> {{ fmodel.created }}</p>
-        </div>
+                    <!-- Row 2: Incomes / Expenses / Assets -->
+                    <div class="columns">
+                        <div class="column">
+                            <h6 class="title is-6">Incomes</h6>
+                            <ul id="income-list">
+                                <!-- Incomes will be dynamically populated -->
+                            </ul>
+                        </div>
+                        <div class="column">
+                            <h6 class="title is-6">Expenses</h6>
+                            <ul id="expense-list">
+                                <!-- Expenses will be dynamically populated -->
+                            </ul>
+                        </div>
+                        <div class="column">
+                            <h6 class="title is-6">Assets</h6>
+                            <ul id="asset-list">
+                                <!-- Assets will be dynamically populated -->
+                            </ul>
+                        </div>
+                    </div>
 
-        <div class="incomes">
-            <h3>Incomes:</h3>
-            <ul>
-                {% for income in incomes %}
-                    <li>{{ income.income_name }}: {{ income.value }}</li>
-                {% empty %}
-                    <li>No income records available.</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <div class="expenses">
-            <h3>Expenses:</h3>
-            <ul>
-                {% for expense in expenses %}
-                    <li>{{ expense.expense_name }}: {{ expense.value }}</li>
-                {% empty %}
-                    <li>No expense records available.</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <div class="assets">
-            <h3>Assets:</h3>
-            <ul>
-                {% for asset in assets %}
-                    <li>{{ asset.asset_name }}: {{ asset.principle_amount }} at {{ asset.yield_rate }}% yield ({{ asset.allocation_pct }}% allocation)</li>
-                {% empty %}
-                    <li>No asset records available.</li>
-                {% endfor %}
-            </ul>
+                    <!-- Row 3: Charts -->
+                    <div class="columns">
+                        <div class="column is-half">
+                            <canvas style="min-height: 320px;" id="cashflow-chart"></canvas>
+                        </div>
+                        <div class="column is-half">
+                            <canvas style="min-height: 320px;" id="asset-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</body>
-</html>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const slug = "{{ slug }}"; // Pass slug to fetch data
+    
+        // Fetch data from the server
+        fetch(`/api/pages/${slug}/`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Data received:', data);
+    
+                // Update FModel name
+                const fmodelNameElement = document.getElementById('fmodel-name');
+                if (fmodelNameElement && data.fmodel && data.fmodel.model_name) {
+                    fmodelNameElement.textContent = data.fmodel.model_name;
+                } else {
+                    console.error('Error updating FModel name');
+                }
+    
+                // Update dates
+                const publishedDateElement = document.getElementById('published-date');
+                const createdDateElement = document.getElementById('created-date');
+                if (publishedDateElement && createdDateElement) {
+                    publishedDateElement.textContent = data.published_page ? data.published_page.published_date : 'N/A';
+                    createdDateElement.textContent = data.fmodel ? data.fmodel.date_created : 'N/A';
+                } else {
+                    console.error('Error updating dates');
+                }
+    
+                // Update Incomes
+                const incomeList = document.getElementById('income-list');
+                if (incomeList) {
+                    incomeList.innerHTML = ''; // Clear existing items
+                    if (data.incomes && data.incomes.length) {
+                        data.incomes.forEach(income => {
+                            const listItem = document.createElement('li');
+                            // Convert value to number for proper formatting
+                            const value = parseFloat(income.value).toFixed(0);
+                            listItem.textContent = `${income.income_name}: £${value}`;
+                            incomeList.appendChild(listItem);
+                        });
+                    } else {
+                        incomeList.innerHTML = '<li>No income records available.</li>';
+                    }
+                }
+    
+                // Update Expenses
+                const expenseList = document.getElementById('expense-list');
+                if (expenseList) {
+                    expenseList.innerHTML = ''; // Clear existing items
+                    if (data.expenses && data.expenses.length) {
+                        data.expenses.forEach(expense => {
+                            const listItem = document.createElement('li');
+                            // Convert value to number for proper formatting
+                            const value = parseFloat(expense.value).toFixed(0);
+                            listItem.textContent = `${expense.expense_name}: £${value}`;
+                            expenseList.appendChild(listItem);
+                        });
+                    } else {
+                        expenseList.innerHTML = '<li>No expense records available.</li>';
+                    }
+                }
+    
+                // Update Assets
+                const assetList = document.getElementById('asset-list');
+                if (assetList) {
+                    assetList.innerHTML = ''; // Clear existing items
+                    if (data.assets && data.assets.length) {
+                        data.assets.forEach(asset => {
+                            const listItem = document.createElement('li');
+                            // Convert yield_rate and principle_amount to numbers for proper formatting
+                            const yieldRate = parseFloat(asset.yield_rate).toFixed(2);
+                            const principleAmount = parseFloat(asset.principle_amount).toFixed(0);
+                            listItem.textContent = `${asset.asset_name}: Yield Rate ${yieldRate}%, Principal Amount: £${principleAmount}`;
+                            assetList.appendChild(listItem);
+                        });
+                    } else {
+                        assetList.innerHTML = '<li>No asset records available.</li>';
+                    }
+                }
+    
+                // Initialize charts (Ensure you include your chart initialization code here)
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                // Optionally display an error message on the page
+                document.getElementById('income-list').innerHTML = '<li>Error loading data.</li>';
+            });
+    });
+    
+</script>
+
+{% endblock %}

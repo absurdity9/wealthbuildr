@@ -419,23 +419,39 @@ def published_page_view(request, slug):
         if not request.user.is_authenticated or published_page.fmodel.user != request.user:
             return HttpResponseForbidden("You do not have permission to view this page.")
     
-    # Fetching related data
-    incomes = published_page.fmodel.income_set.all()
-    expenses = published_page.fmodel.expense_set.all()
-    assets = published_page.fmodel.asset_set.all()
-
     # Preparing the context to pass to the template
     context = {
         'published_page': published_page,
         'fmodel': published_page.fmodel,
-        'incomes': incomes,
-        'expenses': expenses,
-        'assets': assets,
+        'slug': slug,  # Pass the slug to the template for JavaScript use
     }
     
     # Render the template with the context data
     return render(request, 'published_page.html', context)
 
+def api_page_view(request, slug):
+    published_page = get_object_or_404(PublishedPage, slug=slug)
+    if not published_page.is_public:
+        if not request.user.is_authenticated or published_page.fmodel.user != request.user:
+            return JsonResponse({'error': 'Forbidden'}, status=403)
+    
+    data = {
+        'published_page': {
+            'id': published_page.id,
+            'slug': published_page.slug,
+            'title': published_page.page_name,
+            'published_date': published_page.published_date.strftime('%Y-%m-%d'),
+        },
+        'fmodel': {
+            'model_id': published_page.fmodel.id,
+            'model_name': published_page.fmodel.fmodel_name,
+            'date_created': published_page.fmodel.created.strftime('%Y-%m-%d %H:%M:%S'),
+        },
+        'incomes': list(published_page.fmodel.income_set.values()),
+        'expenses': list(published_page.fmodel.expense_set.values()),
+        'assets': list(published_page.fmodel.asset_set.values()),
+    }
+    return JsonResponse(data)
 
 @csrf_exempt
 @require_http_methods(["POST"])
