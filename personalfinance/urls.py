@@ -18,7 +18,6 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='index'), name='logout'), 
     path('edit_fmodel/<int:fmodel_id>/', views.edit_fmodel, name='edit_fmodel'),
     path('add/', views.add, name='add'),
-    path('add_copy/', views.add_copy, name='add_copy'),
     path('get_fmodel_data/<int:fmodel_id>/', views.get_fmodel_data, name='get_fmodel_data'),
     path('pages/<slug:slug>/', views.published_page_view, name='published_page'),
     path('publish/', views.create_or_update_published_page, name='create_or_update_published_page'),

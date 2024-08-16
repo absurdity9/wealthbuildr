@@ -58,9 +58,6 @@ def index(request):
 def add(request):
     return render(request, 'personalfinance/add.html')
 
-def add_copy(request):
-    return render(request, 'personalfinance/add_copy.html')
-
 def get_fmodel_data(request, fmodel_id):
     fmodel = get_object_or_404(FModel, id=fmodel_id)
     
