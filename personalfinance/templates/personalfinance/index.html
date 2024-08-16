@@ -4,6 +4,14 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
+<style>
+    .tab-content {
+        display: none;
+    }
+    .tab-content.is-active {
+        display: block;
+    }
+</style>
 <div class="container" data-theme="dark">
     <section class="section">  
         <div class="columns is-vcentered"> <!-- Title -->
@@ -37,17 +45,24 @@
             <button class="delete" aria-label="close" onclick="closeModal()"></button>
         </header>
         <section class="modal-card-body">
-            <form id="editFmodelForm">
                 <div class="field">
-                    <label class="label">Model Name</label>
+                    <label for="fmodel_name" class="label">Name:</label>
                     <div class="control">
                         <input class="input" type="text" id="model_name" name="model_name">
                     </div>
                 </div>
-                <div id="incomesContainer"></div>
-                <div id="expensesContainer"></div>
-                <div id="assetsContainer"></div>
-            </form>
+                <div class="tabs is-boxed">
+                    <ul>
+                        <li class="is-active" data-tab="incomesContainer"><a>Edit Incomes</a></li>
+                        <li data-tab="expensesContainer"><a>Edit Expenses</a></li>
+                        <li data-tab="assetsContainer"><a>Edit Assets</a></li>
+                    </ul>
+                </div>
+                <form id="editFmodelForm">
+                    <div id="incomesContainer" class="tab-content is-active"></div>
+                    <div id="expensesContainer" class="tab-content"></div>
+                    <div id="assetsContainer" class="tab-content"></div>
+                </form>
         </section>
         <footer class="modal-card-foot">
             <button class="button is-success" onclick="saveEdits()">Save changes</button>
@@ -105,8 +120,34 @@
 <script src="{% static 'personalfinance/calculations-script.js' %}"></script>
 <script src="{% static 'personalfinance/modals.js' %}"></script>
 
-<script>    
+<script>   
+
     document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tabs ul li');
+        const contents = document.querySelectorAll('.tab-content');
+
+        const activateTab = (tab) => {
+            const target = tab.getAttribute('data-tab');
+
+            tabs.forEach(t => t.classList.remove('is-active'));
+            contents.forEach(c => c.classList.remove('is-active'));
+
+            tab.classList.add('is-active');
+            const targetContent = document.getElementById(target);
+            if (targetContent) {
+                targetContent.classList.add('is-active');
+            }
+        };
+
+        tabs.forEach(tab => {
+        tab.addEventListener('click', () => activateTab(tab));
+        });
+        // Debugging step - Ensure tabs and containers are correct
+        console.log('Tabs:', tabs);
+        console.log('Contents:', contents);
+        // Initialize with the first tab
+        activateTab(tabs[0]);
+
         const fmodelsData = JSON.parse('{{ fmodels_data | escapejs }}');
         const fmodelContainer = document.getElementById('fmodel-container');
     
@@ -278,6 +319,7 @@
         }
         
         window.showEditModal = function(fmodelId) {
+
             fetch(`/get_fmodel_data/${fmodelId}/`)
                 .then(response => response.json())
                 .then(data => {
@@ -380,8 +422,12 @@
                         `;
                     });
         
-                    // Show the modal
+
+
+                    // Show edit modal
                     document.getElementById('editModal').classList.add('is-active');
+
+                    
                 })
                 .catch(error => console.error('Error:', error));
         };
