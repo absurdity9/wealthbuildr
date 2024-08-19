@@ -123,43 +123,46 @@
 <script>   
 
     document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('.tabs ul li');
-        const contents = document.querySelectorAll('.tab-content');
-
-        const activateTab = (tab) => {
-            const target = tab.getAttribute('data-tab');
-
-            tabs.forEach(t => t.classList.remove('is-active'));
-            contents.forEach(c => c.classList.remove('is-active'));
-
-            tab.classList.add('is-active');
-            const targetContent = document.getElementById(target);
-            if (targetContent) {
-                targetContent.classList.add('is-active');
-            }
-        };
-
-        tabs.forEach(tab => {
-        tab.addEventListener('click', () => activateTab(tab));
-        });
-        // Debugging step - Ensure tabs and containers are correct
-        console.log('Tabs:', tabs);
-        console.log('Contents:', contents);
-        // Initialize with the first tab
-        activateTab(tabs[0]);
-
+        const duration = 5; // Set the duration to 5 years
         const fmodelsData = JSON.parse('{{ fmodels_data | escapejs }}');
         const fmodelContainer = document.getElementById('fmodel-container');
-    
-        const duration = 5; // Set the duration to 5 years
-        
+
+        const finalAllocationResult = {};
+
         for (const fmodelId in fmodelsData) {
             const fmodel = fmodelsData[fmodelId];
     
             const totalIncome = fmodel.incomes.reduce((sum, income) => sum + parseFloat(income.value), 0);
             const totalExpense = fmodel.expenses.reduce((sum, expense) => sum + parseFloat(expense.value), 0);
-            const remainder = totalIncome - totalExpense;
-    
+        
+            const modelName = fmodel.model_info.model_name; // Extract the model name
+            const assets = fmodel.assets; // Assuming `assets` is part of each `fmodel`
+            const remainder = totalIncome - totalExpense; // Assuming defined elsewhere
+            
+            const modelResult = {}; // Object to store both allocation and future value results for this model
+            
+            assets.forEach(asset => {
+                // Update allocation calculation to divide by 100
+                const allocationValue = (asset.allocation_pct / 100) * remainder;
+                
+                // Define the variables for the future value calculation
+                const initialSavings = asset.principle_amount; // Use principle_amount as initial savings
+                const monthlyContribution = allocationValue; // Allocation as monthly contribution
+                const annualRate = asset.yield_rate/100; // Yield rate as annual rate
+                const months = duration * 12; // Convert duration (in years) to months
+
+                // Calculate the future value using the provided function
+                const futureValue = calculateFutureValue(initialSavings, monthlyContribution, annualRate, months);
+                
+                // Store both allocation and future value in the model result
+                modelResult[asset.asset_name] = {
+                    allocation: allocationValue.toFixed(2), // Store allocation value
+                    futureValue: futureValue // Store future value
+                };
+            });
+
+            finalAllocationResult[modelName] = modelResult;
+
             const cashflowCanvasId = `cashInChart-${fmodelId}`; // Unique canvas ID for cashflow chart
             const assetCanvasId = `assetChart-${fmodelId}`; // Unique canvas ID for asset chart
     
@@ -211,7 +214,11 @@
                                     <h6 class="title is-6">Assets</h6>
                                     <ul id="asset-list-${fmodelId}">
                                         ${fmodel.assets.map(asset => `
-                                            <li>${asset.asset_name}: Yield Rate ${asset.yield_rate.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}, Principal Amount: ${asset.principle_amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</li>
+                                            <li>
+                                                ${asset.asset_name}: ${asset.principle_amount.toLocaleString(undefined, { maximumFractionDigits: 0 })} <br>
+                                                Yield Rate: ${asset.yield_rate.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}%, <br>
+                                                Cash left allocation: ${asset.allocation_pct} %
+                                              </li>
                                         `).join('')}
                                         <li id="total-after-t-years-${fmodelId}" class="mt-4"></li>
                                     </ul>
@@ -317,8 +324,34 @@
                 }
             });
         }
-        
+
+        console.log("Final Allocation Result:", finalAllocationResult);
+
         window.showEditModal = function(fmodelId) {
+            const tabs = document.querySelectorAll('.tabs ul li');
+            const contents = document.querySelectorAll('.tab-content');
+
+            const activateTab = (tab) => {
+                const target = tab.getAttribute('data-tab');
+
+                tabs.forEach(t => t.classList.remove('is-active'));
+                contents.forEach(c => c.classList.remove('is-active'));
+
+                tab.classList.add('is-active');
+                const targetContent = document.getElementById(target);
+                if (targetContent) {
+                    targetContent.classList.add('is-active');
+                }
+            };
+
+            tabs.forEach(tab => {
+            tab.addEventListener('click', () => activateTab(tab));
+            });
+            // Debugging step - Ensure tabs and containers are correct
+            console.log('Tabs:', tabs);
+            console.log('Contents:', contents);
+            // Initialize with the first tab
+            activateTab(tabs[0]);
 
             fetch(`/get_fmodel_data/${fmodelId}/`)
                 .then(response => response.json())

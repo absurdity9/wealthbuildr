@@ -63,17 +63,13 @@ function formatDate(datetime) {
 }
 
 function calculateFutureValue(initialSavings, monthlyContribution, annualRate, months) {
-  // Convert annual interest rate to monthly interest rate
   const monthlyRate = annualRate / 12;
   
-  // Calculate the future value of the initial savings
   const futureValueInitialSavings = initialSavings * Math.pow(1 + monthlyRate, months);
   
-  // Calculate the future value of the monthly contributions
   const futureValueMonthlyContributions = monthlyContribution * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate;
   
-  // Total future value
   const totalFutureValue = futureValueInitialSavings + futureValueMonthlyContributions;
   
-  return totalFutureValue.toFixed(2); // Returns the result rounded to 2 decimal places
+  return totalFutureValue.toFixed(2); 
 }
