@@ -62,12 +62,12 @@ function formatDate(datetime) {
   return `${year}-${month}-${day}`;
 }
 
-function calculateFutureValue(initialSavings, monthlyContribution, annualRate, months) {
+function calculateFutureValue(initialSavings, monthlyContribution, annualRate, months, allocPct) {
   const monthlyRate = annualRate / 12;
   
   const futureValueInitialSavings = initialSavings * Math.pow(1 + monthlyRate, months);
   
-  const futureValueMonthlyContributions = monthlyContribution * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate;
+  const futureValueMonthlyContributions = (allocPct*monthlyContribution) * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate;
   
   const totalFutureValue = futureValueInitialSavings + futureValueMonthlyContributions;
   
