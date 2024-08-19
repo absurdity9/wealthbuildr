@@ -21,7 +21,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     list_filter = ('fmodel',)
 
 class AssetAdmin(admin.ModelAdmin):
-    list_display = ('id', 'fmodel', 'asset_name', 'yield_rate', 'principle_amount')
+    list_display = ('id', 'fmodel', 'asset_name', 'yield_rate', 'principle_amount', 'allocation_pct')
     search_fields = ('asset_name',)
     list_filter = ('fmodel', 'yield_rate')
     ordering = ('id',)
