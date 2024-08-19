@@ -28,7 +28,7 @@ class AssetAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
     fieldsets = (
         (None, {
-            'fields': ('id', 'fmodel', 'asset_name', 'yield_rate', 'principle_amount')
+            'fields': ('id', 'fmodel', 'asset_name', 'yield_rate', 'principle_amount', 'allocation_pct')
         }),
     )
 
