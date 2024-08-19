@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <div class="columns my-5"> <!-- Fmodel Count -->
+        <div class="columns my-5 ml-1"> <!-- Fmodel Count -->
             <p>You have {{ fmodel_count }} financial models.</p>
         </div>
 
@@ -65,9 +65,17 @@
                 </form>
         </section>
         <footer class="modal-card-foot">
-            <button class="button is-success" onclick="saveEdits()">Save changes</button>
-            <button class="button" onclick="closeModal()">Cancel</button>
+            <div class="buttons is-flex is-justify-content-space-between is-flex-grow-1">
+                <div>
+                    <button class="button is-link mr-3" onclick="showAddExpenseModal()">Add expense</button>
+                    <button class="button is-link" onclick="showAddAssetsModal()">Add assets</button>
+                </div>
+                <div>
+                    <button class="button is-success" onclick="saveEdits()">Save changes</button>
+                </div>
+            </div>
         </footer>
+        
     </div>
 </div>
 
@@ -114,11 +122,89 @@
     </div>
 </div>
 
+<!-- Add Expense Modal -->
+<div id="addExpenseModal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Add Expense</p>
+            <button class="delete" aria-label="close" onclick="closeAddExpenseModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <form id="addExpenseForm">
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                <div class="field">
+                    <label class="label">Expense Name</label>
+                    <div class="control">
+                        <input class="input" type="text" id="expense_name" name="expense_name">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Amount (£)</label>
+                    <div class="control">
+                        <input class="input" type="number" id="amount" name="amount" step="0.01">
+                    </div>
+                </div>
+            </form>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button" onclick="closeAddExpenseModal()">Cancel</button>
+            <button class="button is-success" onclick="submitExpenses()">Save</button>
+        </footer>
+    </div>
+</div>
+
+<!-- Add Assets Modal -->
+<div id="addAssetsModal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Add Assets</p>
+            <button class="delete" aria-label="close" onclick="closeAddAssetsModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <form id="addAssetsForm">
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                <div class="field">
+                    <label class="label">Asset Name</label>
+                    <div class="control">
+                        <input class="input" type="text" id="asset_name" name="asset_name">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Yield Rate (%)</label>
+                    <div class="control">
+                        <input class="input" type="number" id="yield_rate" name="yield_rate" step="0.01">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Principal Amount (£)</label>
+                    <div class="control">
+                        <input class="input" type="number" id="principal_amount" name="principal_amount" step="0.01">
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">Allocation of Leftover Cash (%)</label>
+                    <div class="control">
+                        <input class="input" type="number" id="cash_allocation" name="cash_allocation" step="0.01">
+                    </div>
+                </div>
+            </form>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button" onclick="closeAddAssetsModal()">Cancel</button>
+            <button class="button is-success" onclick="submitAssets()">Save</button>
+        </footer>
+    </div>
+</div>
+
+
 {% endblock %}
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
 <script src="{% static 'personalfinance/calculations-script.js' %}"></script>
 <script src="{% static 'personalfinance/modals.js' %}"></script>
+<script src="{% static 'personalfinance/form-handling.js' %}"></script>
 
 <script>   
 
@@ -347,10 +433,7 @@
             tabs.forEach(tab => {
             tab.addEventListener('click', () => activateTab(tab));
             });
-            // Debugging step - Ensure tabs and containers are correct
-            console.log('Tabs:', tabs);
-            console.log('Contents:', contents);
-            // Initialize with the first tab
+
             activateTab(tabs[0]);
 
             fetch(`/get_fmodel_data/${fmodelId}/`)
@@ -360,7 +443,9 @@
                     console.log(data.model_info.model_name);
 
                     // Populate basic fields
-                    document.getElementById('model_name').value = data.model_info.model_name;
+                    model_name = data.model_info.model_name;
+                    document.getElementById('model_name').value = model_name;
+                    localStorage.setItem('fmodelNameValue', model_name);
         
                     // Handle incomes
                     const incomesContainer = document.getElementById('incomesContainer');
@@ -454,13 +539,10 @@
                         </div>
                         `;
                     });
-        
-
 
                     // Show edit modal
                     document.getElementById('editModal').classList.add('is-active');
 
-                    
                 })
                 .catch(error => console.error('Error:', error));
         };
@@ -471,7 +553,89 @@
         };
 
 });
-    
-    
+
+function submitExpenses() {
+
+    let fmodelId = localStorage.getItem('fmodelNameValue');
+
+    const form = document.getElementById('addExpenseForm');
+    const userId = form.querySelector('input[name="user_id"]').value;
+    const fmodelName = fmodelId;
+    const expenseName = form.querySelector('#expense_name').value;
+    const amount = form.querySelector('#amount').value;
+
+    const data = {
+        user_id: userId,
+        fmodel_name: fmodelName,
+        expenses: [{
+            expense_name: expenseName,
+            value: amount
+        }]
+    };
+
+    fetch('{% url "create_expense" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.expenses) {
+            location.reload();
+            // Handle success
+            console.log('Expense created successfully:', data);
+        } else {
+            // Handle error
+            console.error('Error:', data.error);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+function submitAssets() {
+
+    let fmodelId = localStorage.getItem('fmodelNameValue');
+
+    const form = document.getElementById('addAssetsForm');
+    const userId = form.querySelector('input[name="user_id"]').value;
+    const fmodelName = fmodelId;
+    const assetName = form.querySelector('#asset_name').value;
+    const yieldRate = form.querySelector('#yield_rate').value;
+    const principalAmount = form.querySelector('#principal_amount').value;
+    const cashAllocation = form.querySelector('#cash_allocation').value;
+
+    const data = {
+        user_id: userId,
+        fmodel_name: fmodelName,
+        assets: [{
+            asset_name: assetName,
+            yield_rate: yieldRate,
+            principle_amount: principalAmount,
+            allocation_pct: cashAllocation
+        }]
+    };
+
+    fetch('{% url "create_assets" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.assets) {
+            location.reload();
+            // Handle success
+            console.log('Asset created successfully:', data);
+        } else {
+            // Handle error
+            console.error('Error:', data.error);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
 </script>
 {% endblock %}

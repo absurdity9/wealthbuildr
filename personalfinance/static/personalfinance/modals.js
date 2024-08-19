@@ -94,9 +94,7 @@ function saveEdits() {
         .catch(error => console.error('Error:', error));
 }
 
-
 function showShareModal(fmodelId) {
-    
     fetch(`/get_fmodel_data/${fmodelId}/`)
         .then(response => response.json())
         .then(data => {
@@ -114,9 +112,42 @@ function showShareModal(fmodelId) {
 }
 
 function closeShareModal() {
-    console.log("clicked");
     document.getElementById('shareModal').classList.remove('is-active');
 }
+
+function showAddExpenseModal(fmodelId) {
+    document.getElementById('addExpenseModal').classList.add('is-active');
+}
+
+function returnfmodelNameValue(){
+    let fmodelId = localStorage.getItem('fmodelId');
+    let fmodelNameValue
+
+    fetch(`/get_fmodel_data/${fmodelId}/`)
+    .then(response => response.json())
+    .then(data => {
+        localStorage.setItem('fmodelId', fmodelId);
+        const modelName = data.model_info.model_name;
+        return modelName;
+    })
+    .catch(error => console.error('Error fetching model data:', error));
+    modelName = fmodelNameValue;
+    return fmodelNameValue
+}
+
+
+function closeAddExpenseModal() {
+    document.getElementById('addExpenseModal').classList.remove('is-active');
+}
+
+function showAddAssetsModal() {
+    document.getElementById('addAssetsModal').classList.add('is-active');
+}
+
+function closeAddAssetsModal() {
+    document.getElementById('addAssetsModal').classList.remove('is-active');
+}
+
 
 function togglePublicStatus(data) {
 

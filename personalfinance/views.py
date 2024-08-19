@@ -235,7 +235,6 @@ def create_expense(request):
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 @csrf_exempt
-
 def create_assets(request):
     if request.method == 'POST':
         try:
