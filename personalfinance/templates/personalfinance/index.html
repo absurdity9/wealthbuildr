@@ -225,7 +225,7 @@
             const remainder = totalIncome - totalExpense;
             const duration = 5;
             const durationIntervals = [12, 24, 36, 48, 60]; // Intervals at which to calculate future values
-            const modelResult = {};
+            const modelResultObj = {};
 
             assets.forEach(asset => {
                 const initialSavings = asset.principle_amount;
@@ -242,10 +242,10 @@
                     futureValues[`futureValue_t${months}`] = futureValue; // Store future value with two decimal precision
                 });
 
-                modelResult[asset.asset_name] = futureValues;
+                modelResultObj[asset.asset_name] = futureValues;
             });
 
-            finalAllocationResult[modelName] = modelResult;
+            finalAllocationResult[modelName] = modelResultObj;
 
             const cashflowCanvasId = `cashInChart-${fmodelId}`; // Unique canvas ID for cashflow chart
             const assetCanvasId = `assetChart-${fmodelId}`; // Unique canvas ID for asset chart
@@ -364,26 +364,31 @@
                 }
             });
     
-            const assetYearlyAmounts = fmodel.assets.map(asset => calculateROI(asset.principle_amount, asset.yield_rate, duration).yearlyAmounts);
-    
-            const totalAfterTyears = fmodel.assets.reduce((sum, asset) => {
-                return sum + calculateROI(asset.principle_amount, asset.yield_rate, duration).total;
-            }, 0);
-    
-            document.getElementById(`total-after-t-years-${fmodelId}`).innerHTML = `Total After ${duration} Years for All Assets: £${totalAfterTyears.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-    
-            const ctxAsset = document.getElementById(assetCanvasId).getContext('2d'); // Asset Chart
+            const modelResult = finalAllocationResult[fmodel.model_info.model_name];
+
+            // Prepare the labels based on the duration intervals (e.g., "Year 1", "Year 2", etc.)
+            const labels = durationIntervals.map((_, i) => `Year ${i + 1}`);
+            // Prepare the datasets for Chart.js
+            const datasets = Object.keys(modelResult).map((assetName, index) => {
+                const futureValues = modelResult[assetName];
+                return {
+                    label: assetName,
+                    data: durationIntervals.map(months => futureValues[`futureValue_t${months}`]),
+                    backgroundColor: `rgba(54, 162, 235, ${(index + 1) / Object.keys(modelResult).length})`,
+                    borderColor: `rgba(54, 162, 235, 1)`,
+                    borderWidth: 1
+                };
+            });
+
+            // Get the context for the canvas
+            const ctxAsset = document.getElementById(assetCanvasId).getContext('2d');
+
+            // Create the chart with future values
             new Chart(ctxAsset, {
                 type: 'bar',
                 data: {
-                    labels: Array.from({ length: duration }, (_, i) => `Year ${i + 1}`), // Labels for each year, skipping year 0
-                    datasets: assetYearlyAmounts.map((yearlyAmounts, index) => ({
-                        label: fmodel.assets[index].asset_name,
-                        data: yearlyAmounts,
-                        backgroundColor: `rgba(255, 159, 64, ${(index + 1) / fmodel.assets.length})`,
-                        borderColor: `rgba(255, 159, 64, 1)`,
-                        borderWidth: 1
-                    }))
+                    labels: labels,  // Labels are intervals like "Month 12", "Month 24", etc.
+                    datasets: datasets // Each dataset corresponds to an asset's future values over time
                 },
                 options: {
                     responsive: true,
