@@ -44,7 +44,7 @@ def index(request):
         }
         data[fmodel.id] = model_data
     
-    print(data)  # For debugging purposes
+    print(data)  #  debugging 
     
     json_data = simplejson.dumps(data, use_decimal=True)
     
@@ -502,7 +502,6 @@ def create_or_update_published_page(request):
 @csrf_exempt
 def check_published_page(request, fmodel_id):
     try:
-        # Try to get the PublishedPage object for the given fmodel_id
         published_page = PublishedPage.objects.get(fmodel_id=fmodel_id)
         response = {
             'exists': True,
@@ -512,7 +511,6 @@ def check_published_page(request, fmodel_id):
             'published_date': published_page.published_date.isoformat(),
         }
     except PublishedPage.DoesNotExist:
-        # If no PublishedPage exists, return a response indicating that
         response = {
             'exists': False,
             'message': f"No PublishedPage found for fmodel_id {fmodel_id}."

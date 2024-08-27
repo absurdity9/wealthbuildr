@@ -233,10 +233,8 @@
                 const annualRate = asset.yield_rate / 100;
                 const allocPct = asset.allocation_pct / 100;
                 
-                // Object to store future values at different time intervals
                 const futureValues = {};
 
-                // Calculate future value at each interval
                 durationIntervals.forEach(months => {
                     const futureValue = calculateFutureValue(initialSavings, monthlyContribution, annualRate, months, allocPct);
                     futureValues[`futureValue_t${months}`] = futureValue; // Store future value with two decimal precision
@@ -380,10 +378,8 @@
                 };
             });
 
-            // Get the context for the canvas
             const ctxAsset = document.getElementById(assetCanvasId).getContext('2d');
 
-            // Create the chart with future values
             new Chart(ctxAsset, {
                 type: 'bar',
                 data: {
@@ -445,7 +441,6 @@
                     localStorage.setItem('fmodelId', fmodelId);
                     console.log(data.model_info.model_name);
 
-                    // Populate basic fields
                     model_name = data.model_info.model_name;
                     document.getElementById('model_name').value = model_name;
                     localStorage.setItem('fmodelNameValue', model_name);
@@ -587,10 +582,8 @@ function submitExpenses() {
     .then(data => {
         if (data.expenses) {
             location.reload();
-            // Handle success
             console.log('Expense created successfully:', data);
         } else {
-            // Handle error
             console.error('Error:', data.error);
         }
     })
@@ -630,10 +623,8 @@ function submitAssets() {
     .then(data => {
         if (data.assets) {
             location.reload();
-            // Handle success
             console.log('Asset created successfully:', data);
         } else {
-            // Handle error
             console.error('Error:', data.error);
         }
     })

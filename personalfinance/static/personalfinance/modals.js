@@ -196,7 +196,7 @@ function checkPageExists(fmodelId) {
         .catch(error => {
             console.error('Error checking page existence:', error);
             alert('Error checking page existence: ' + error.message);
-            return false; // Assuming the page does not exist in case of an error
+            return false;
         });
 }
 
@@ -216,13 +216,11 @@ function publishPage() {
     checkPageExists(fmodelId).then(exists => {
 
         if (exists) {
-            // If the page exists, toggle its public status
             togglePublicStatus({
                 'slug': slug,
                 'is_public': visibility === "True"
             });
         } else {
-            // If the page does not exist, publish it
             fetch('/publish/', {
                 method: 'POST',
                 headers: {

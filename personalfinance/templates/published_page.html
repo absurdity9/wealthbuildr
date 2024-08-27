@@ -61,15 +61,13 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const slug = "{{ slug }}"; // Pass slug to fetch data
+        const slug = "{{ slug }}"; 
     
-        // Fetch data from the server
         fetch(`/api/pages/${slug}/`)
             .then(response => response.json())
             .then(data => {
                 console.log('Data received:', data);
     
-                // Update FModel name
                 const fmodelNameElement = document.getElementById('fmodel-name');
                 if (fmodelNameElement && data.fmodel && data.fmodel.model_name) {
                     fmodelNameElement.textContent = data.fmodel.model_name;
@@ -77,7 +75,6 @@
                     console.error('Error updating FModel name');
                 }
     
-                // Update dates
                 const publishedDateElement = document.getElementById('published-date');
                 const createdDateElement = document.getElementById('created-date');
                 if (publishedDateElement && createdDateElement) {
@@ -87,7 +84,6 @@
                     console.error('Error updating dates');
                 }
     
-                // Update Incomes
                 const incomeList = document.getElementById('income-list');
                 if (incomeList) {
                     incomeList.innerHTML = ''; // Clear existing items
@@ -104,7 +100,6 @@
                     }
                 }
     
-                // Update Expenses
                 const expenseList = document.getElementById('expense-list');
                 if (expenseList) {
                     expenseList.innerHTML = ''; // Clear existing items
@@ -121,7 +116,6 @@
                     }
                 }
     
-                // Update Assets
                 const assetList = document.getElementById('asset-list');
                 if (assetList) {
                     assetList.innerHTML = ''; // Clear existing items
@@ -139,12 +133,11 @@
                     }
                 }
     
-                // Initialize charts (Ensure you include your chart initialization code here)
                 const totalIncome = data.incomes.reduce((sum, income) => sum + parseFloat(income.value), 0);
                 const totalExpense = data.expenses.reduce((sum, expense) => sum + parseFloat(expense.value), 0);
                 const remainder = totalIncome - totalExpense;
 
-                // Initialize Cashflow Chart
+                //  Cashflow Chart
                 const ctxCashflow = document.getElementById('cashflow-chart').getContext('2d');
                 new Chart(ctxCashflow, {
                     type: 'bar',
@@ -184,7 +177,6 @@
                     }
                 });
 
-                // Assuming `modelResult` and `durationIntervals` are already processed from data
 
                 const duration = 5;
                 const durationIntervals = [12, 24, 36, 48, 60]; // Intervals at which to calculate future values
@@ -197,10 +189,8 @@
                     const annualRate = asset.yield_rate / 100;
                     const allocPct = asset.allocation_pct / 100;
                     
-                    // Object to store future values at different time intervals
                     const futureValues = {};
     
-                    // Calculate future value at each interval
                     durationIntervals.forEach(months => {
                         const futureValue = calculateFutureValue(initialSavings, monthlyContribution, annualRate, months, allocPct);
                         futureValues[`futureValue_t${months}`] = futureValue; // Store future value with two decimal precision
@@ -253,7 +243,6 @@
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
-                // Optionally display an error message on the page
                 document.getElementById('income-list').innerHTML = '<li>Error loading data.</li>';
             });
     });

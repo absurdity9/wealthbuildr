@@ -290,13 +290,11 @@ function submitAssets(fmodelNameValue) {
 
     const assets = [];
     for (let i = 0; i < assetEntries.length; i++) {
-        // Extract values from the elements within each asset-entry
         const assetNameElement = assetEntries[i].querySelector(`[id^='asset_name_']`);
         const yieldRateElement = assetEntries[i].querySelector(`[id^='yield_rate_']`);
         const principalAmountElement = assetEntries[i].querySelector(`[id^='principle_amount_']`);
         const allocationPctElement = assetEntries[i].querySelector(`[id^='allocation_pct_']`);
 
-        // Check if all elements are found
         if (assetNameElement && yieldRateElement && principalAmountElement && allocationPctElement) {
             const assetName = assetNameElement.value;
             const yieldRate = yieldRateElement.value;
