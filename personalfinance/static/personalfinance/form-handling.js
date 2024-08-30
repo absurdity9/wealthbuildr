@@ -25,10 +25,10 @@ function addExpenseEntry() {
 let assetCount = 1;
 
 function addAssetEntry() {
-  const assetsContainer = document.getElementById("assetsContainer");
-  const newEntry = document.createElement("div");
-  newEntry.className = "asset-entry block"; // Added Bulma block styling for separation
-  newEntry.innerHTML = `
+    const assetsContainer = document.getElementById("assetsContainer");
+    const newEntry = document.createElement("div");
+    newEntry.className = "asset-entry block"; 
+    newEntry.innerHTML = `
         <div class="field">
             <label for="asset_name_${assetCount}" class="label">Asset Name:</label>
             <div class="control">
@@ -48,13 +48,12 @@ function addAssetEntry() {
             </div>
         </div>
         <div class="field">
-            <label for="yield_rate_0" class="label">Allocation of leftover cash (%):</label>
+            <label for="allocation_pct_${assetCount}" class="label">Allocation of leftover cash (%):</label>
             <div class="control">
-                <input type="number" step="0.01" id="allocation_pct" name="allocation_pct" class="input" required>
+                <input type="number" step="0.01" id="allocation_pct_${assetCount}" name="allocation_pct" class="input" required>
             </div>
         </div>
     `;
-  assetsContainer.appendChild(newEntry);
-  assetCount++;
+    assetsContainer.appendChild(newEntry);
+    assetCount++;
 }
-

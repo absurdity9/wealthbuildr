@@ -322,7 +322,7 @@ function submitAssets(fmodelNameValue) {
         fmodel_name: formData.get('fmodel_name'),
         assets: assets
     };
-
+    console.log(data)
     const csrftoken = formData.get('csrfmiddlewaretoken');
 
     return fetch('{% url "create_assets" %}', {
