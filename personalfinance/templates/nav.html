@@ -13,7 +13,7 @@
     <nav class="navbar" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <a class="navbar-item" href="/">
-                <img src="{% static 'images/logo.png' %}" alt="Logo">
+                <img src="{% static 'logo.svg' %}" alt="Logo">
             </a>
 
             <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
@@ -27,7 +27,7 @@
             <div class="navbar-start">
                 <a class="navbar-item" href="/">
                     {% if user.is_authenticated %}
-                        Dashboard for {{ user.username }}
+                        {{ user.username }}'s dashboard
                     {% else %}
                         Dashboard
                     {% endif %}
