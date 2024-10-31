@@ -27,7 +27,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = ['18.134.227.77', 'ec2-18-134-227-77.eu-west-2.compute.amazonaws.com', 'localhost']
-s# Application definition
+# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
